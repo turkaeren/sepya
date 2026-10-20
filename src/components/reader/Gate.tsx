@@ -94,7 +94,7 @@ export default function Gate({ initialStage, suggestedName }: { initialStage: 'p
       if (!data.ok) return;
       setSavedName(data.name);
       setStage('welcome');
-      setTimeout(() => router.refresh(), 1500);
+      setTimeout(() => router.refresh(), 2300);
     } finally {
       setBusy(false);
     }
@@ -103,15 +103,17 @@ export default function Gate({ initialStage, suggestedName }: { initialStage: 'p
   const pinsCls = 'pins' + (msg ? ' err' : '') + (ok ? ' ok' : '') + (locked ? ' locked' : '') + (shake ? ' shake-' + shake : '');
 
   return (
-    <div className="sp">
+    <div className="sp dark">
+      <div className="glow" aria-hidden="true" />
       <Grain id="g-gate" />
 
       {stage === 'pin' && (
         <main className={'center ' + (leaving ? 'leaving' : 'scr')}>
-          <p className="meta brandmark">SEPYA</p>
-          <h1 className="disp" style={{ margin: 0, maxWidth: 260, fontSize: 32, fontWeight: 500, fontStyle: 'italic', lineHeight: 1.15 }}>
+          <p className="meta brandmark reveal3">SEPYA</p>
+          <h1 className="disp reveal" style={{ margin: 0, maxWidth: 260, fontSize: 32, fontWeight: 500, fontStyle: 'italic', lineHeight: 1.15 }}>
             İçeri girmek için dört rakam.
           </h1>
+          <div className="reveal3">
           <div className={pinsCls}>
             {[0, 1, 2, 3].map((i) => (
               <span key={i} className={'pd' + (i < pin.length ? ' on' : '') + (i === pin.length ? ' next' : '')} aria-hidden="true" />
@@ -132,6 +134,7 @@ export default function Gate({ initialStage, suggestedName }: { initialStage: 'p
               disabled={locked || busy}
             />
           </div>
+          </div>
           <div className="msg" role="status" aria-live="polite">
             {msg && !locked && <p className="rise" style={{ fontSize: 18, fontStyle: 'italic', color: 'var(--accent)' }}>{msg}</p>}
             {locked && (
@@ -149,9 +152,9 @@ export default function Gate({ initialStage, suggestedName }: { initialStage: 'p
       {stage === 'name' && (
         <main className="scr screen">
           <form className="nameform" onSubmit={submitName}>
-            <h1 className="disp rise" style={{ margin: 0, fontSize: 44, fontWeight: 500, fontStyle: 'italic', lineHeight: 1.05 }}>Adın ne?</h1>
-            <p className="rise2" style={{ margin: '14px 0 50px', fontSize: 18, lineHeight: 1.55, color: 'var(--soft)' }}>Burada sana nasıl seslenelim?</p>
-            <div className="rise2" style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
+            <h1 className="disp reveal" style={{ margin: 0, fontSize: 44, fontWeight: 500, fontStyle: 'italic', lineHeight: 1.05 }}>Adın ne?</h1>
+            <p className="reveal2" style={{ margin: '14px 0 50px', fontSize: 18, lineHeight: 1.55, color: 'var(--soft)' }}>Burada sana nasıl seslenelim?</p>
+            <div className="reveal3" style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
               <label htmlFor="name" className="sr">Adın</label>
               <input
                 id="name"
@@ -177,8 +180,8 @@ export default function Gate({ initialStage, suggestedName }: { initialStage: 'p
 
       {stage === 'welcome' && (
         <main className="scr center" style={{ gap: 22 }}>
-          <span className="disp rise" style={{ fontSize: 42, fontWeight: 500, fontStyle: 'italic', lineHeight: 1.1 }}>Hoş geldin, {savedName}.</span>
-          <span className="rule rise2" aria-hidden="true" />
+          <span className="disp reveal" style={{ fontSize: 42, fontWeight: 500, fontStyle: 'italic', lineHeight: 1.1 }}>Hoş geldin, {savedName}.</span>
+          <span className="rule reveal2" aria-hidden="true" />
         </main>
       )}
     </div>

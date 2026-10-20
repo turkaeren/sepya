@@ -29,6 +29,8 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
   const [idx, setIdx] = useState(0);
   const [turn, setTurn] = useState<Turn>(null);
   const [menu, setMenu] = useState(false);
+  const [dawn, setDawn] = useState(true);
+  useEffect(() => { const t = setTimeout(() => setDawn(false), 1900); return () => clearTimeout(t); }, []);
   const flip = useRef(false);
   const turnTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const swipe = useRef<{ x: number; y: number } | null>(null);
@@ -127,6 +129,7 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
 
   return (
     <div className="sp">
+      {dawn && <div className="night" aria-hidden="true" />}
       {view === 'read' && (
         <main className="scr screen">
           <div
