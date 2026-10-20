@@ -7,7 +7,7 @@ import { blockIpAction, revokeSessionAction } from '../../../actions';
 
 export const dynamic = 'force-dynamic';
 
-const KIND: Record<string, string> = { title: 'Ana sayfa', section: 'Kategori açılışı', empty: 'Boş sayfa', archive: 'Arşiv', menu: 'Menü' };
+const KIND: Record<string, string> = { title: 'Ana sayfa', section: 'Kategori açılışı', empty: 'Boş sayfa', archive: 'Arşiv', menu: 'Tarih çarkı' };
 const CAT: Record<string, string> = { siir: 'Şiirler', not: 'Notlar', defter: 'Defter' };
 
 export default async function Ziyaretci({ params }: { params: Promise<{ id: string }> }) {

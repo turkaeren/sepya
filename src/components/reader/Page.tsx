@@ -30,9 +30,9 @@ export function Page({ pg, reader, grainId = 'g' }: { pg: PageData; reader?: str
               <span className="disp" style={{ fontSize: 54, fontWeight: 600, letterSpacing: '.26em', paddingLeft: '.26em', lineHeight: 1 }}>SEPYA</span>
               <span className="rule" aria-hidden="true" style={{ margin: '26px 0 20px' }} />
               <span className="disp" style={{ fontSize: 23, fontStyle: 'italic' }}>birkaç sayfa daha</span>
-              <span className="meta" style={{ marginTop: 16, textTransform: 'none', letterSpacing: '.16em' }}>şiirler · notlar · defter</span>
-              {reader && <span style={{ marginTop: 72, fontSize: 16, fontStyle: 'italic', color: 'var(--soft)' }}>{reader} için.</span>}
-              <span className="meta" style={{ marginTop: 22, display: 'flex', alignItems: 'center', gap: 10, textTransform: 'none', letterSpacing: '.14em' }}>
+              {reader && <span style={{ marginTop: 76, fontSize: 17, fontStyle: 'italic', color: 'var(--soft)' }}>{reader} için.</span>}
+              <span className="meta" style={{ marginTop: 10, fontSize: 9.5, letterSpacing: '.3em' }}>kimseye gösterme</span>
+              <span className="meta" style={{ marginTop: 56, display: 'flex', alignItems: 'center', gap: 10, textTransform: 'none', letterSpacing: '.14em' }}>
                 kaydırarak oku
                 <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden="true"><path d="M22 5H2M6 1L2 5l4 4" /></svg>
               </span>
@@ -90,6 +90,12 @@ export const Dots = () => (
 );
 export const ArrowR = () => (
   <svg width="24" height="10" viewBox="0 0 24 10" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden="true"><path d="M0 5h22M18 1l4 4-4 4" /></svg>
+);
+export const Lock = () => (
+  <svg width="16" height="18" viewBox="0 0 16 18" fill="none" stroke="currentColor" strokeWidth="1.1" aria-hidden="true"><rect x="2" y="8" width="12" height="9" rx="1.5" /><path d="M5 8V5.5a3 3 0 0 1 6 0V8" /><path d="M8 11.5v2" /></svg>
+);
+export const Close = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.1" aria-hidden="true"><path d="M2 2l12 12M14 2L2 14" /></svg>
 );
 export const ArrowL = () => (
   <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden="true"><path d="M22 5H2M6 1L2 5l4 4" /></svg>

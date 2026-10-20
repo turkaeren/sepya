@@ -136,3 +136,47 @@
 @keyframes spDawn{to{opacity:0}}
 @media (prefers-reduced-motion:reduce){.sp .glow{animation:none}}
 .sp .nm:focus-visible{outline:none}
+
+/* —— Kilit —— */
+.sp .lockbtn{position:absolute;z-index:6;top:calc(env(safe-area-inset-top) + 50px);right:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:var(--soft);opacity:.75;transition:opacity .2s}
+.sp .lockbtn:hover{opacity:1}
+.sp .dusk{position:absolute;inset:0;z-index:40;pointer-events:none;background:radial-gradient(ellipse 95% 70% at 50% 44%,#1C1815 0%,#100E0C 55%,#070605 100%);animation:spFade .85s ease forwards}
+
+/* —— Zaman çizgisi (sağ kenar) —— */
+.sp .edge.r{right:44px}
+.sp .rail{position:absolute;z-index:4;right:0;top:calc(env(safe-area-inset-top) + 124px);bottom:calc(env(safe-area-inset-bottom) + 96px);width:44px;padding:0;margin:0;border:0;background:none;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent}
+.sp .rail .line{position:absolute;right:17px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(43,34,28,0),rgba(43,34,28,.2) 8%,rgba(43,34,28,.2) 92%,rgba(43,34,28,0))}
+.sp .rail .tick{position:absolute;right:15px;width:5px;height:1px;background:rgba(43,34,28,.38)}
+.sp .rail .cur{position:absolute;right:14px;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(123,36,49,.12);transition:top .6s cubic-bezier(.2,.7,.2,1)}
+.sp .rail .cur.hello{animation:spPulse 1.4s ease-in-out 2s 3}
+.sp .rail .rl{position:absolute;right:30px;transform:translateY(-50%);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:9px;font-weight:500;letter-spacing:.18em;color:var(--soft);white-space:nowrap;transition:top .6s cubic-bezier(.2,.7,.2,1);pointer-events:none}
+.sp .rail:focus-visible{outline-offset:-4px}
+
+/* —— Tarih çarkı —— */
+.sp .wheel{position:absolute;inset:0;z-index:15;color:#E4D8C3;animation:spFade .35s ease both}
+.sp .wheel.out{animation:spFadeOut .3s ease forwards}
+.sp .wheel .veil{position:absolute;inset:0;background:radial-gradient(ellipse 120% 90% at 85% 50%,rgba(26,21,17,.975) 0%,rgba(9,8,7,.985) 70%);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.sp .wheel .grain{mix-blend-mode:screen;opacity:.06}
+.sp .whead{position:absolute;left:30px;right:10px;top:calc(env(safe-area-inset-top) + 50px);height:44px;display:flex;align-items:center;justify-content:space-between}
+.sp .whead .meta,.sp .wfoot{color:#9D907F;letter-spacing:.3em}
+.sp .wclose{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#C9BCA6}
+.sp .wfoot{position:absolute;left:30px;bottom:calc(env(safe-area-inset-bottom) + 34px);font-size:9.5px;text-transform:none;letter-spacing:.16em}
+.sp .sel{position:absolute;left:30px;width:calc(100% - 210px);max-width:260px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;pointer-events:none}
+.sp .sel .meta{color:#B5495A;letter-spacing:.24em;font-size:9.5px}
+.sp .sel .ttl{font-size:27px;font-style:italic;font-weight:500;line-height:1.15;color:#EDE3D1}
+.sp .sel .go{font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:10px;letter-spacing:.14em;color:#8C8072;opacity:0;transition:opacity .3s}
+.sp .wheel.settled .sel .go{opacity:1}
+.sp .sel.flash{animation:spSel .45s ease}
+.sp .drum{position:absolute;right:0;top:0;bottom:0;width:170px;perspective:640px;perspective-origin:50% 50%;touch-action:none;cursor:grab;-webkit-mask-image:linear-gradient(180deg,transparent 12%,#000 34%,#000 66%,transparent 88%);mask-image:linear-gradient(180deg,transparent 12%,#000 34%,#000 66%,transparent 88%)}
+.sp .drum:active{cursor:grabbing}
+.sp .drum .band{position:absolute;left:10px;right:16px;top:50%;height:62px;margin-top:-31px;border-top:1px solid rgba(181,73,90,.6);border-bottom:1px solid rgba(181,73,90,.6);background:linear-gradient(90deg,rgba(181,73,90,0),rgba(181,73,90,.07))}
+.sp .cyl{position:absolute;inset:0;transform-style:preserve-3d}
+.sp .drum .it{position:absolute;left:0;right:0;top:50%;height:62px;margin:-31px 0 0;padding:0 30px 0 12px;display:flex;align-items:center;justify-content:flex-end;gap:12px;border:0;background:none;color:#8F8475;font:inherit;cursor:pointer;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:color .2s}
+.sp .drum .it.on{color:#F1E7D6}
+.sp .drum .it .d{font-family:'Cormorant Garamond',Georgia,serif;font-size:42px;font-weight:500;line-height:1;width:52px;text-align:right;font-variant-numeric:lining-nums tabular-nums}
+.sp .drum .it .m{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:9.5px;font-weight:500;letter-spacing:.2em}
+.sp .drum .it.on .m span:first-child{color:#C25566}
+
+@keyframes spFadeOut{to{opacity:0}}
+@keyframes spPulse{0%,100%{box-shadow:0 0 0 4px rgba(123,36,49,.12)}50%{box-shadow:0 0 0 10px rgba(123,36,49,.0),0 0 0 6px rgba(123,36,49,.22)}}
+@keyframes spSel{from{opacity:.2;transform:translateY(calc(-50% + 6px))}to{opacity:1;transform:translateY(-50%)}}
