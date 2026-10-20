@@ -111,7 +111,7 @@ export default function Gate({ initialStage, suggestedName }: { initialStage: 'p
         <main className={'center ' + (leaving ? 'leaving' : 'scr')}>
           <p className="meta brandmark reveal3">SEPYA</p>
           <h1 className="disp reveal" style={{ margin: 0, maxWidth: 260, fontSize: 32, fontWeight: 500, fontStyle: 'italic', lineHeight: 1.15 }}>
-            İçeri girmek için dört rakam.
+            Şifre?
           </h1>
           <div className="reveal3">
           <div className={pinsCls}>
@@ -152,8 +152,7 @@ export default function Gate({ initialStage, suggestedName }: { initialStage: 'p
       {stage === 'name' && (
         <main className="scr screen">
           <form className="nameform" onSubmit={submitName}>
-            <h1 className="disp reveal" style={{ margin: 0, fontSize: 44, fontWeight: 500, fontStyle: 'italic', lineHeight: 1.05 }}>Adın ne?</h1>
-            <p className="reveal2" style={{ margin: '14px 0 50px', fontSize: 18, lineHeight: 1.55, color: 'var(--soft)' }}>Burada sana nasıl seslenelim?</p>
+            <h1 className="disp reveal" style={{ margin: '0 0 50px', fontSize: 44, fontWeight: 500, fontStyle: 'italic', lineHeight: 1.05 }}>Adın ne?</h1>
             <div className="reveal3" style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
               <label htmlFor="name" className="sr">Adın</label>
               <input
