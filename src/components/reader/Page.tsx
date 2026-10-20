@@ -1,0 +1,96 @@
+import type { PageData } from '@/lib/pagination';
+
+export function Grain({ id }: { id: string }) {
+  return (
+    <svg className="grain" aria-hidden="true">
+      <filter id={id}>
+        <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves={3} stitchTiles="stitch" />
+        <feColorMatrix type="matrix" values="0 0 0 0 .36  0 0 0 0 .27  0 0 0 0 .2  0 0 0 .6 0" />
+      </filter>
+      <rect width="100%" height="100%" filter={`url(#${id})`} />
+    </svg>
+  );
+}
+
+/** Tek bir tam ekran sayfa. Okur tarafında ve yönetim önizlemesinde aynen kullanılır. */
+export function Page({ pg, reader, grainId = 'g' }: { pg: PageData; reader?: string; grainId?: string }) {
+  return (
+    <div className="page">
+      <div className="gutter" aria-hidden="true" />
+      <div className="edges" aria-hidden="true" />
+      <Grain id={grainId} />
+      <div className="inner">
+        <header>
+          <span className="meta" style={{ letterSpacing: '.26em', fontSize: 10 }}>{pg.top}</span>
+        </header>
+
+        <div className={'pbody' + (pg.mid ? ' mid' : '')}>
+          {pg.kind === 'title' && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <span className="disp" style={{ fontSize: 54, fontWeight: 600, letterSpacing: '.26em', paddingLeft: '.26em', lineHeight: 1 }}>SEPYA</span>
+              <span className="rule" aria-hidden="true" style={{ margin: '26px 0 20px' }} />
+              <span className="disp" style={{ fontSize: 23, fontStyle: 'italic' }}>birkaç sayfa daha</span>
+              <span className="meta" style={{ marginTop: 16, textTransform: 'none', letterSpacing: '.16em' }}>şiirler · notlar · defter</span>
+              {reader && <span style={{ marginTop: 72, fontSize: 16, fontStyle: 'italic', color: 'var(--soft)' }}>{reader} için.</span>}
+              <span className="meta" style={{ marginTop: 22, display: 'flex', alignItems: 'center', gap: 10, textTransform: 'none', letterSpacing: '.14em' }}>
+                kaydırarak oku
+                <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden="true"><path d="M22 5H2M6 1L2 5l4 4" /></svg>
+              </span>
+            </div>
+          )}
+
+          {pg.kind === 'section' && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <h2 className="disp" style={{ margin: 0, fontSize: 42, fontWeight: 500, letterSpacing: '.16em', paddingLeft: '.16em', textTransform: 'uppercase', lineHeight: 1 }}>{pg.label}</h2>
+              <span className="rule" aria-hidden="true" style={{ margin: '28px 0' }} />
+              <p style={{ margin: 0, maxWidth: 240, fontSize: 18, fontStyle: 'italic', lineHeight: 1.6, color: 'var(--soft)' }}>{pg.epi}</p>
+              <p className="meta" style={{ margin: '30px 0 0', textTransform: 'none', letterSpacing: '.14em' }}>{pg.countLabel}</p>
+            </div>
+          )}
+
+          {pg.kind === 'empty' && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <span className="rule" aria-hidden="true" style={{ marginBottom: 30 }} />
+              <p className="disp" style={{ margin: 0, fontSize: 34, fontStyle: 'italic', fontWeight: 500, lineHeight: 1.1 }}>Henüz yazılmadı.</p>
+              <p style={{ margin: '16px 0 0', maxWidth: 250, fontSize: 18, lineHeight: 1.6, color: 'var(--soft)' }}>Bu sayfalar şimdilik boş. Bir şeyler birikiyor; acele etmiyoruz.</p>
+            </div>
+          )}
+
+          {pg.kind === 'entry' && (
+            <div>
+              {!pg.isFirst && (
+                <p style={{ margin: '0 0 26px', fontSize: 15, fontStyle: 'italic', color: 'var(--soft)' }}>
+                  {pg.title} <span className="meta" style={{ marginLeft: 6, letterSpacing: '.14em' }}>{pg.partLabel}</span>
+                </p>
+              )}
+              {pg.isFirst && <h1 className="disp ptitle">{pg.title}</h1>}
+              {pg.poem != null && <div className="poem">{pg.poem}</div>}
+              {pg.paras && (
+                <div className="prose">
+                  {pg.paras.map((p, i) => <p key={i} className={p.cont ? 'cont' : undefined}>{p.t}</p>)}
+                </div>
+              )}
+              {pg.hasMore && <p style={{ margin: '22px 0 0', textAlign: 'right', fontSize: 15, fontStyle: 'italic', color: 'var(--soft)' }}>devamı →</p>}
+            </div>
+          )}
+        </div>
+
+        <footer>
+          <span className="meta" style={{ fontSize: 11, letterSpacing: '.22em', fontVariantNumeric: 'tabular-nums' }}>{pg.counter}</span>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+export const Dots = () => (
+  <svg width="20" height="4" viewBox="0 0 20 4" aria-hidden="true">
+    <circle cx="2" cy="2" r="1.3" fill="currentColor" /><circle cx="10" cy="2" r="1.3" fill="currentColor" /><circle cx="18" cy="2" r="1.3" fill="currentColor" />
+  </svg>
+);
+export const ArrowR = () => (
+  <svg width="24" height="10" viewBox="0 0 24 10" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden="true"><path d="M0 5h22M18 1l4 4-4 4" /></svg>
+);
+export const ArrowL = () => (
+  <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden="true"><path d="M22 5H2M6 1L2 5l4 4" /></svg>
+);
