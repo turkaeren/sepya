@@ -9,6 +9,7 @@ const ITEMS: [string, string][] = [
   ['/yonetim/ziyaretciler', 'Ziyaretçiler'],
   ['/yonetim/notlar', 'Notlar'],
   ['/yonetim/icerikler', 'İçerikler'],
+  ['/yonetim/kapak', 'Kapak'],
   ['/yonetim/basarisiz', 'Başarısız denemeler'],
   ['/yonetim/guvenlik', 'Güvenlik']
 ];

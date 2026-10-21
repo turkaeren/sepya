@@ -247,3 +247,22 @@ export async function deleteNoteAction(f: FormData) {
   await db().from('reader_notes').delete().eq('id', id);
   revalidatePath('/yonetim/notlar');
 }
+
+// —— Kapak yazıları ————————————————————————————————————————————————
+
+export async function saveCoverAction(_: FormState, f: FormData): Promise<FormState> {
+  await requireAdmin();
+  const { COVER_DEFAULT, COVER_LIMITS } = await import('@/lib/cover');
+  const { COVER_KEY } = await import('@/lib/cover-store');
+  const out: Record<string, string> = {};
+  for (const k of Object.keys(COVER_DEFAULT) as (keyof typeof COVER_DEFAULT)[]) {
+    const v = str(f, k).replace(/\s+/g, ' ').trim();
+    if (v.length > COVER_LIMITS[k]) return { error: 'Satırlardan biri çok uzun.' };
+    out[k] = v;
+  }
+  const { error } = await db().from('settings').upsert({ key: COVER_KEY, value: JSON.stringify(out), updated_at: new Date().toISOString() });
+  if (error) return { error: error.message };
+  revalidatePath('/');
+  revalidatePath('/yonetim/kapak');
+  return { ok: 'Kapak kaydedildi. Okurlar bir sonraki açılışta yenisini görür.' };
+}

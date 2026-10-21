@@ -7,6 +7,7 @@ import { MONTHS, upTR, ymd } from '@/lib/format';
 import { Lock, Page, Pen } from './Page';
 import PostsPanel from './PostsPanel';
 import NoteSheet from './NoteSheet';
+import type { CoverText } from '@/lib/cover';
 import './reader.css';
 
 type Turn = { from: PageData; cls: string } | null;
@@ -22,7 +23,7 @@ function track(payload: Record<string, unknown>, beacon = false) {
     .catch(() => {});
 }
 
-export default function Reader({ entries, name }: { entries: EntryLite[]; name: string }) {
+export default function Reader({ entries, name, cover }: { entries: EntryLite[]; name: string; cover?: CoverText }) {
   const router = useRouter();
   const [idx, setIdx] = useState(0);
   const [turn, setTurn] = useState<Turn>(null);
@@ -111,11 +112,11 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
             if (Math.abs(dx) > 46 && Math.abs(dx) > Math.abs(dy) * 1.3) { swipedAt.current = Date.now(); go(dx < 0 ? 1 : -1); }
           }}
         >
-          <Page key={page.key} pg={page} reader={name} grainId="g-cur" hasNext={idx < seq.pages.length - 1} onNext={() => go(1)} onNote={() => setNote(true)} />
+          <Page key={page.key} pg={page} reader={name} cover={cover} grainId="g-cur" hasNext={idx < seq.pages.length - 1} onNext={() => go(1)} onNote={() => setNote(true)} />
           {turn && <div className={'under ' + turn.cls} aria-hidden="true" />}
           {turn && (
             <div className={'turn ' + turn.cls} aria-hidden="true">
-              <Page pg={turn.from} reader={name} grainId="g-turn" />
+              <Page pg={turn.from} reader={name} cover={cover} grainId="g-turn" />
               <div className="tshade" />
             </div>
           )}

@@ -2,6 +2,7 @@ import '@fontsource/pinyon-script/index.css';
 import '@fontsource/special-elite/index.css';
 import '@fontsource/unifrakturmaguntia/index.css';
 import { CATS, type PageData } from '@/lib/pagination';
+import { COVER_DEFAULT, type CoverText } from '@/lib/cover';
 
 export function Grain({ id }: { id: string }) {
   return (
@@ -16,7 +17,8 @@ export function Grain({ id }: { id: string }) {
 }
 
 /** Tek bir tam ekran sayfa. Okur tarafında ve yönetim önizlemesinde aynen kullanılır. */
-export function Page({ pg, reader, grainId = 'g', onNext, hasNext, onNote }: { pg: PageData; reader?: string; grainId?: string; onNext?: () => void; hasNext?: boolean; onNote?: () => void }) {
+export function Page({ pg, reader, cover = COVER_DEFAULT, grainId = 'g', onNext, hasNext, onNote }: { pg: PageData; reader?: string; cover?: CoverText; grainId?: string; onNext?: () => void; hasNext?: boolean; onNote?: () => void }) {
+  const ded = cover.dedication.trim() ? cover.dedication.replace(/\{isim\}/gi, reader || 'Okur') : '';
   return (
     <div className="page">
       <div className="gutter" aria-hidden="true" />
@@ -30,15 +32,15 @@ export function Page({ pg, reader, grainId = 'g', onNext, hasNext, onNote }: { p
         <div className={'pbody' + (pg.mid ? ' mid' : '') + (pg.kind === 'read' ? ' read' : '')}>
           {pg.kind === 'title' && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-              <span className="disp" style={{ fontSize: 54, fontWeight: 600, letterSpacing: '.26em', paddingLeft: '.26em', lineHeight: 1 }}>SEPYA</span>
+              {cover.title.trim() && <span className="disp" style={{ fontSize: cover.title.length > 8 ? 40 : 54, fontWeight: 600, letterSpacing: '.26em', paddingLeft: '.26em', lineHeight: 1.1 }}>{cover.title}</span>}
               <span className="rule" aria-hidden="true" style={{ margin: '26px 0 20px' }} />
-              <span className="disp" style={{ fontSize: 23, fontStyle: 'italic' }}>birkaç sayfa daha</span>
-              {reader && <span style={{ marginTop: 76, fontSize: 17, fontStyle: 'italic', color: 'var(--soft)' }}>{reader} için.</span>}
-              <span className="meta" style={{ marginTop: 10, fontSize: 9.5, letterSpacing: '.3em' }}>kimseye gösterme</span>
-              <span className="meta" style={{ marginTop: 56, display: 'flex', alignItems: 'center', gap: 10, textTransform: 'none', letterSpacing: '.14em' }}>
-                kaydırarak oku
+              {cover.subtitle.trim() && <span className="disp" style={{ fontSize: 23, fontStyle: 'italic', maxWidth: 280 }}>{cover.subtitle}</span>}
+              {ded && <span style={{ marginTop: 76, fontSize: 17, fontStyle: 'italic', color: 'var(--soft)', maxWidth: 280 }}>{ded}</span>}
+              {cover.note.trim() && <span className="meta" style={{ marginTop: ded ? 10 : 76, fontSize: 9.5, letterSpacing: '.3em', maxWidth: 280 }}>{cover.note}</span>}
+              {cover.hint.trim() && <span className="meta" style={{ marginTop: 56, display: 'flex', alignItems: 'center', gap: 10, textTransform: 'none', letterSpacing: '.14em' }}>
+                {cover.hint}
                 <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden="true"><path d="M22 5H2M6 1L2 5l4 4" /></svg>
-              </span>
+              </span>}
             </div>
           )}
 

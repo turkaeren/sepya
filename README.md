@@ -73,6 +73,7 @@ npm run dev                  # http://localhost:3000
 
 ## Son güncellemeler
 
+- **Kapak yazıları:** Yönetim › Kapak'tan düzenleniyor. Değerler `settings` tablosunda, `cover_text` anahtarında JSON olarak duruyor (`src/lib/cover.ts`, `cover-store.ts`). Boş satır gösterilmez, `{isim}` okurun adıyla değişir.
 - **Kaynak, notlar, baş harf** (migration `0005_source_notes_initials.sql`, uygulandı):
   - **Nereden geldi:** `src/lib/source.ts` → `detectSource()`.
     - Bakılan ipuçları: utm_source/kaynak etiketi, igsh/fbclid/gclid, uygulama içi tarayıcı user-agent'ı ve document.referrer. Gate ilk açılışta bunları alır, `/api/pin` ile gönderir.

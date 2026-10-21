@@ -21,7 +21,7 @@ export interface EditorEntry {
 
 const DEVICES: [number, number][] = [[375, 812], [390, 844], [430, 932]];
 
-function Phone({ w, h, scale, children }: { w: number; h: number; scale: number; children: React.ReactNode }) {
+export function Phone({ w, h, scale, children }: { w: number; h: number; scale: number; children: React.ReactNode }) {
   return (
     <div className="phone">
       <div className="screen" style={{ width: Math.round(w * scale), height: Math.round(h * scale) }}>
