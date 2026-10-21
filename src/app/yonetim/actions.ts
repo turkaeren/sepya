@@ -161,3 +161,45 @@ export async function changePinAction(_: FormState, f: FormData): Promise<FormSt
   revalidatePath('/yonetim', 'layout');
   return { ok: 'PIN değişti. Açık okur oturumları kapatıldı.' };
 }
+
+// —— WordPress içe aktarma ——————————————————————————————————————————
+
+export type ImportState = { error?: string; ok?: string; count?: number; siir?: number; not?: number; deleted?: number } | undefined;
+
+export async function importAction(_: ImportState, f: FormData): Promise<ImportState> {
+  await requireAdmin();
+  const { fetchFromWordPressCom, parseWxr, ImportError } = await import('@/lib/wp-import');
+  let posts;
+  try {
+    if (str(f, 'mode') === 'file') {
+      const file = f.get('file');
+      if (!(file instanceof File) || file.size === 0) return { error: 'Bir .xml dosyası seç.' };
+      if (file.size > 20 * 1024 * 1024) return { error: 'Dosya 20 MB’tan büyük.' };
+      posts = parseWxr(await file.text());
+    } else {
+      posts = await fetchFromWordPressCom(str(f, 'site'));
+    }
+  } catch (e) {
+    return { error: e instanceof ImportError ? e.message : 'WordPress’e ulaşılamadı. Dışa aktarma dosyasıyla dene.' };
+  }
+  if (!posts.length) return { error: 'Hiç yayımlanmış yazı bulunamadı.' };
+
+  const sb = db();
+  let deleted = 0;
+  if (str(f, 'replace') === '1') {
+    const { count, error } = await sb.from('entries').delete({ count: 'exact' }).not('id', 'is', null);
+    if (error) return { error: 'Eski içerikler silinemedi: ' + error.message };
+    deleted = count ?? 0;
+  }
+  const rows = posts.map((p) => ({
+    title: p.title, content: p.content.slice(0, 50000), category: p.category, entry_date: p.entry_date, published: true, sort_order: 0
+  }));
+  for (let i = 0; i < rows.length; i += 200) {
+    const { error } = await sb.from('entries').insert(rows.slice(i, i + 200));
+    if (error) return { error: `Aktarma ${i}. yazıda durdu: ${error.message}` };
+  }
+  revalidatePath('/yonetim/icerikler');
+  revalidatePath('/');
+  const siir = posts.filter((p) => p.category === 'siir').length;
+  return { ok: `${posts.length} yazı aktarıldı.`, count: posts.length, siir, not: posts.length - siir, deleted };
+}

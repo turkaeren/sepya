@@ -25,7 +25,7 @@ export default async function Icerikler({ searchParams }: { searchParams: Promis
     <div>
       <div className="ph">
         <div><h1>İçerikler</h1><p className="sub">Okur tarafında tarih sırasıyla, en yeni önce görünür.</p></div>
-        <div className="acts"><Link className="btn pri" href="/yonetim/icerikler/yeni">+ Yeni İçerik</Link></div>
+        <div className="acts"><Link className="btn" href="/yonetim/icerikler/ice-aktar">WordPress’ten al</Link><Link className="btn pri" href="/yonetim/icerikler/yeni">+ Yeni İçerik</Link></div>
       </div>
       {sp.durum && FLASH[sp.durum] && <div className="okbar" role="status">{FLASH[sp.durum]}</div>}
 
