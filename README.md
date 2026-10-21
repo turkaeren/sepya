@@ -73,6 +73,11 @@ npm run dev                  # http://localhost:3000
 
 ## Son güncellemeler
 
+- **2ae1923:** Okuma ve kapak görselleri.
+  - Bir yazı artık tek sayfada aşağı kaydırılarak okunuyor; yazılar arasında başlık/görsel geçiş sayfası var.
+  - Yönetimde başlık (kapak) görseli yüklenebiliyor: Supabase Storage'da özel `covers` alanı, JPEG/PNG/WebP, en fazla 3 MB.
+  - Görsel yalnızca oturumla `/api/cover/[id]` üzerinden veriliyor.
+- **c03b2c2 / aa5bb1a:** Editörde yalnızca **Taslak** ve **Yayınla** düğmeleri var. Kaydet düğmesi ve durum seçici kaldırıldı; bu, var olan yazının yayınlanmaması hatasını da düzeltti.
 - **9e6d445:** Okur ekranında sağ üstte tıklanabilir gezinme çubuğu: "≡ Yazılar" listeyi açar, yanında kilit var. Liste açıkken çubuk gizlenir. Sınıflar `.topnav` ve `.tnav` (eski `.menu` ile çakışmasın diye `.tmenu`).
 - **83010c3:** Yönetim → İçerikler → **WordPress’ten al** (`src/lib/wp-import.ts`, `importAction`).
   - Kaynak WordPress.com herkese açık API'si ya da WordPress dışa aktarma .xml dosyası.
