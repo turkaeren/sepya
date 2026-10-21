@@ -49,7 +49,8 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
   }, [k]);
 
   useEffect(() => {
-    track({ kind: page.kind, entryId: page.entryId, part: page.part, category: page.category, label: page.title || null });
+    const kind = page.kind === 'cover' || page.kind === 'read' ? 'entry' : page.kind;
+    track({ kind, entryId: page.entryId, part: page.part, category: page.category, label: page.title || null });
   }, [page.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -99,7 +100,7 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
     <div className="sp">
       <main className="scr screen">
         <div
-          className="stage"
+          className={'stage' + (page.kind === 'read' ? ' isread' : '')}
           onPointerDown={(e) => { swipe.current = { x: e.clientX, y: e.clientY }; }}
           onPointerUp={(e) => {
             const s = swipe.current; swipe.current = null;
@@ -108,7 +109,7 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
             if (Math.abs(dx) > 46 && Math.abs(dx) > Math.abs(dy) * 1.3) { swipedAt.current = Date.now(); go(dx < 0 ? 1 : -1); }
           }}
         >
-          <Page pg={page} reader={name} grainId="g-cur" />
+          <Page key={page.key} pg={page} reader={name} grainId="g-cur" hasNext={idx < seq.pages.length - 1} onNext={() => go(1)} />
           {turn && <div className={'under ' + turn.cls} aria-hidden="true" />}
           {turn && (
             <div className={'turn ' + turn.cls} aria-hidden="true">

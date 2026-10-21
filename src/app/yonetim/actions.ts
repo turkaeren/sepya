@@ -56,28 +56,38 @@ export async function setupAction(_: FormState, f: FormData): Promise<FormState>
 
 // —— İçerik ——————————————————————————————————————————————————————
 
+const COVER_TYPES: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+const COVER_MAX = 3 * 1024 * 1024; // depolama alanındaki sınırla aynı
+
 export async function saveEntryAction(_: FormState, f: FormData): Promise<FormState> {
   await requireAdmin();
   const id = str(f, 'id');
-  const intent = str(f, 'intent'); // publish | draft | save
+  const intent = str(f, 'intent'); // publish | draft
   const title = str(f, 'title').trim();
   const category = str(f, 'category');
   const entry_date = str(f, 'entry_date');
   const content = str(f, 'content').replace(/\r/g, '');
   const sort_order = Number.parseInt(str(f, 'sort_order') || '0', 10) || 0;
+  const removeCover = str(f, 'cover_remove') === '1';
+  const rawCover = f.get('cover');
+  const cover = rawCover instanceof File && rawCover.size > 0 ? rawCover : null;
 
   if (!title || title.length > 200) return { error: 'Başlık 1–200 karakter olmalı.' };
   if (!['siir', 'not', 'defter'].includes(category)) return { error: 'Kategori seç.' };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(entry_date)) return { error: 'Tarih geçersiz.' };
   if (content.length > 50000) return { error: 'Metin çok uzun.' };
-
   if (intent !== 'publish' && intent !== 'draft') return { error: 'Önce “Taslak” ya da “Yayınla” düğmesine bas.' };
+  if (cover && !COVER_TYPES[cover.type]) return { error: 'Görsel JPEG, PNG ya da WebP olmalı.' };
+  if (cover && cover.size > COVER_MAX) return { error: 'Görsel 3 MB’tan büyük olamaz.' };
+  if (id && !UUID.test(id)) return { error: 'Geçersiz içerik.' };
 
   const row: Record<string, unknown> = { title, category, entry_date, content, sort_order, published: intent === 'publish' };
 
   let savedId = id;
+  let oldCover: string | null = null;
   if (id) {
-    if (!UUID.test(id)) return { error: 'Geçersiz içerik.' };
+    const { data: cur } = await db().from('entries').select('cover_url').eq('id', id).maybeSingle();
+    oldCover = (cur?.cover_url as string | null) ?? null;
     const { error } = await db().from('entries').update(row).eq('id', id);
     if (error) return { error: error.message };
   } else {
@@ -85,9 +95,28 @@ export async function saveEntryAction(_: FormState, f: FormData): Promise<FormSt
     if (error || !data) return { error: error?.message ?? 'Kaydedilemedi.' };
     savedId = data.id;
   }
+
+  // Kapak görseli: yeni dosya varsa yükle, yoksa istenirse kaldır.
+  let coverFail = '';
+  if (cover) {
+    const path = `${savedId}/${Date.now()}.${COVER_TYPES[cover.type]}`;
+    const up = await db().storage.from('covers').upload(path, Buffer.from(await cover.arrayBuffer()), { contentType: cover.type, upsert: false });
+    if (up.error) {
+      coverFail = up.error.message;
+    } else {
+      const { error } = await db().from('entries').update({ cover_url: path }).eq('id', savedId);
+      if (error) coverFail = error.message;
+      else if (oldCover) await db().storage.from('covers').remove([oldCover]);
+    }
+  } else if (removeCover && oldCover) {
+    await db().from('entries').update({ cover_url: null }).eq('id', savedId);
+    await db().storage.from('covers').remove([oldCover]);
+  }
+
   revalidatePath('/');
   revalidatePath('/yonetim/icerikler');
-  const durum = intent === 'publish' ? 'yayinlandi' : intent === 'draft' ? 'taslak' : 'kaydedildi';
+  if (coverFail) redirect(`/yonetim/icerikler/${savedId}?durum=gorselhata`);
+  const durum = intent === 'publish' ? 'yayinlandi' : 'taslak';
   redirect(`/yonetim/icerikler/${savedId}?durum=${durum}`);
 }
 
@@ -104,6 +133,8 @@ export async function deleteEntryAction(f: FormData) {
   await requireAdmin();
   const id = str(f, 'id');
   if (!UUID.test(id) || str(f, 'confirm') !== 'sil') redirect(`/yonetim/icerikler/${id}?durum=silinmedi`);
+  const { data: files } = await db().storage.from('covers').list(id);
+  if (files?.length) await db().storage.from('covers').remove(files.map((o) => `${id}/${o.name}`));
   await db().from('entries').delete().eq('id', id);
   revalidatePath('/');
   redirect('/yonetim/icerikler?durum=silindi');

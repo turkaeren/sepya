@@ -2,7 +2,7 @@
 
 import { useActionState, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { entryPages, type Category } from '@/lib/pagination';
+import { entryReadPages, type Category } from '@/lib/pagination';
 import { Page } from '@/components/reader/Page';
 import { saveEntryAction, type FormState } from '@/app/yonetim/actions';
 import '@/components/reader/reader.css';
@@ -31,7 +31,33 @@ function Phone({ w, h, scale, children }: { w: number; h: number; scale: number;
   );
 }
 
-export default function EntryEditor({ initial, heading, sub, children }: { initial: EditorEntry; heading: string; sub: string; children?: React.ReactNode }) {
+/** Telefon fotoğrafları büyük olur; yüklemeden önce en uzun kenarı 1600 px'e ve JPEG'e indirir. */
+async function shrinkImage(file: File): Promise<Blob> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(i);
+      i.onerror = () => rej(new Error('okunamadı'));
+      i.src = url;
+    });
+    const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.max(1, Math.round(img.naturalWidth * k));
+    const h = Math.max(1, Math.round(img.naturalHeight * k));
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    if (!ctx) throw new Error('tuval yok');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    return await new Promise<Blob>((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('dönüştürülemedi'))), 'image/jpeg', 0.86));
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+export default function EntryEditor({ initial, initialCover = null, heading, sub, children }: { initial: EditorEntry; initialCover?: string | null; heading: string; sub: string; children?: React.ReactNode }) {
   const [state, action, pending] = useActionState<FormState, FormData>(saveEntryAction, undefined);
   const [e, setE] = useState<EditorEntry>(initial);
   const intentRef = useRef<HTMLInputElement>(null);
@@ -39,9 +65,38 @@ export default function EntryEditor({ initial, heading, sub, children }: { initi
   const [pi, setPi] = useState(0);
   const [full, setFull] = useState(false);
   const [dev, setDev] = useState(1);
-  const set = (patch: Partial<EditorEntry>) => { setE((x) => ({ ...x, ...patch })); setPi(0); };
+  const set = (patch: Partial<EditorEntry>) => setE((x) => ({ ...x, ...patch }));
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [coverSrc, setCoverSrc] = useState<string | null>(initialCover);
+  const [removeCover, setRemoveCover] = useState(false);
+  const [coverErr, setCoverErr] = useState('');
 
-  const pages = useMemo(() => entryPages({ id: e.id, title: e.title, category: e.category, entry_date: e.entry_date, content: e.content }), [e]);
+  async function pickCover(ev: React.ChangeEvent<HTMLInputElement>) {
+    const input = ev.currentTarget;
+    const f = input.files?.[0];
+    if (!f) return;
+    try {
+      const blob = await shrinkImage(f);
+      const dt = new DataTransfer();
+      dt.items.add(new File([blob], 'kapak.jpg', { type: 'image/jpeg' }));
+      input.files = dt.files;
+      setCoverSrc(URL.createObjectURL(blob));
+      setRemoveCover(false);
+      setCoverErr('');
+    } catch {
+      input.value = '';
+      setCoverErr('Bu görsel okunamadı; başka bir görsel dene.');
+    }
+  }
+
+  function dropCover() {
+    if (fileRef.current) fileRef.current.value = '';
+    setCoverSrc(null);
+    setRemoveCover(true);
+    setCoverErr('');
+  }
+
+  const pages = useMemo(() => entryReadPages({ id: e.id, title: e.title, category: e.category, entry_date: e.entry_date, content: e.content }, coverSrc), [e, coverSrc]);
   const p = Math.min(pi, pages.length - 1);
   const pg = pages[p];
   const words = e.content.split(/\s+/).filter(Boolean).length;
@@ -62,6 +117,9 @@ export default function EntryEditor({ initial, heading, sub, children }: { initi
       <input type="hidden" name="id" value={e.id ?? ''} />
       <input type="hidden" name="category" value={e.category} />
       <input type="hidden" name="intent" ref={intentRef} defaultValue="" />
+      <input type="hidden" name="cover_remove" value={removeCover ? '1' : ''} />
+      {/* Dosya alanı her zaman sayfada kalır; önizlemeye geçince seçili görsel kaybolmaz */}
+      <input ref={fileRef} type="file" name="cover" accept="image/jpeg,image/png,image/webp" onChange={pickCover} style={{ display: 'none' }} />
       {/* Önizleme modunda da değerlerin gönderilmesi için */}
       {full && <>
         <input type="hidden" name="title" value={e.title} />
@@ -112,9 +170,22 @@ export default function EntryEditor({ initial, heading, sub, children }: { initi
               <textarea id="content" name="content" className="inp ta" value={e.content} onChange={(x) => set({ content: x.target.value })}
                 placeholder={e.category === 'siir' ? 'Her dize bir satır. Kıtalar arasında bir boş satır bırak.' : 'Paragraflar arasında bir boş satır bırak.'} />
               <span className="hint">
-                {e.category === 'siir' ? 'Her satır bir dize; boş satır kıta arası.' : 'Boş satır paragraf arası.'} Uzun metinler sayfalara kendiliğinden bölünür. ·{' '}
-                <b style={{ fontWeight: 500, color: '#1B1A17' }}>{pages.length} sayfa · {lines} satır · tahmini {secs >= 60 ? Math.round(secs / 60) + ' dk' : secs + ' sn'} okuma</b>
+                {e.category === 'siir' ? 'Her satır bir dize; boş satır kıta arası.' : 'Boş satır paragraf arası.'} Okurda yazı tek sayfada, aşağı kaydırılarak okunur. ·{' '}
+                <b style={{ fontWeight: 500, color: '#1B1A17' }}>{lines} satır · tahmini {secs >= 60 ? Math.round(secs / 60) + ' dk' : secs + ' sn'} okuma</b>
               </span>
+            </div>
+            <div className="fld">
+              <span className="lab" id="cv-l">Başlık görseli</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }} aria-labelledby="cv-l" role="group">
+                {coverSrc && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={coverSrc} alt="Seçili başlık görseli" style={{ width: 88, height: 88, objectFit: 'cover', borderRadius: 4, border: '1px solid #E3DED3' }} />
+                )}
+                <button type="button" className="btn sm" onClick={() => fileRef.current?.click()}>{coverSrc ? 'Görseli değiştir' : 'Görsel ekle'}</button>
+                {coverSrc && <button type="button" className="btn sm" onClick={dropCover}>Görseli kaldır</button>}
+              </div>
+              <span className="hint">Yazılar arasındaki geçiş sayfasında başlığın üstünde görünür. Görsel yoksa yalnızca başlık görünür.</span>
+              {coverErr && <span className="hint" role="alert" style={{ color: '#9B1C1C' }}>{coverErr}</span>}
             </div>
             <div className="row2">
               <div className="fld"><label className="lab" htmlFor="sort_order">Aynı gün içindeki sıra</label>

@@ -12,6 +12,7 @@ export interface EntryLite {
   category: Category;
   entry_date: string;
   sort_order?: number;
+  cover_url?: string | null;
 }
 
 export interface Para { t: string; cont: boolean }
@@ -19,7 +20,7 @@ export interface Chunk { poem?: string; paras?: Para[] }
 
 export interface PageData {
   key: string;
-  kind: 'title' | 'section' | 'entry' | 'empty';
+  kind: 'title' | 'section' | 'entry' | 'empty' | 'cover' | 'read';
   top: string;
   counter: string;
   mid: boolean;
@@ -38,6 +39,8 @@ export interface PageData {
   hasMore?: boolean;
   poem?: string;
   paras?: Para[];
+  // cover (yazılar arası geçiş sayfası)
+  coverSrc?: string | null;
 }
 
 export const CATS: Record<Category, { label: string; one: string; many: string; epi: string }> = {
@@ -148,6 +151,39 @@ export function entryPages(e: Omit<EntryLite, 'id'> & { id?: string }): PageData
   }));
 }
 
+
+/** Okurda kullanılan kapak adresi. Yol, yalnızca önbelleği yenilemek için sürüm olarak eklenir. */
+export function coverSrcFor(id: string | undefined, cover: string | null | undefined): string | null {
+  if (!id || !cover) return null;
+  return `/api/cover/${id}?v=${encodeURIComponent(cover)}`;
+}
+
+/** Yazının tamamı tek sayfada, aşağı kaydırılarak okunur. */
+export function fullChunk(e: Pick<EntryLite, 'content' | 'category'>): Chunk {
+  const text = e.content.replace(/\r/g, '').trim();
+  if (e.category === 'siir') {
+    const poem = text.split('\n').map((l) => l.trim()).join('\n').replace(/\n{3,}/g, '\n\n');
+    return { poem };
+  }
+  const paras = text.split(/\n\s*\n/).map((s) => s.replace(/\s*\n\s*/g, ' ').trim()).filter(Boolean);
+  return { paras: (paras.length ? paras : ['']).map((t, i) => ({ t, cont: i === 0 })) };
+}
+
+/**
+ * Bir yazının okur sayfaları: önce başlık (varsa görsel) geçiş sayfası, sonra kaydırılarak okunan yazı.
+ * Okur tarafı ve yönetim önizlemesi aynı işlevi kullanır.
+ */
+export function entryReadPages(e: Omit<EntryLite, 'id'> & { id?: string }, coverSrc?: string | null, counter = ''): PageData[] {
+  const key = e.id ?? 'onizleme';
+  const top = e.entry_date ? dateLabel(e.entry_date) : '';
+  const title = e.title || 'Başlıksız';
+  const src = coverSrc !== undefined ? coverSrc : coverSrcFor(e.id, e.cover_url);
+  return [
+    { key: `${key}:kapak`, kind: 'cover', top, counter, mid: true, entryId: e.id, title, category: e.category, coverSrc: src, part: 0, parts: 1 },
+    { key: `${key}:oku`, kind: 'read', top, counter, mid: false, entryId: e.id, title, category: e.category, part: 1, parts: 1, isFirst: true, ...fullChunk(e) }
+  ];
+}
+
 export interface Sequence { pages: PageData[]; first: Record<string, number> }
 
 export function buildSequence(all: EntryLite[], mode: Mode, dir: SortDir): Sequence {
@@ -169,11 +205,9 @@ export function buildSequence(all: EntryLite[], mode: Mode, dir: SortDir): Seque
       countLabel: `${list.length} ${c.many} · ${dir === 'asc' ? 'eskiden yeniye' : 'yeniden eskiye'}`
     });
   }
-  for (const e of list) {
+  list.forEach((e, i) => {
     first[e.id] = pages.length;
-    for (const p of entryPages(e)) pages.push(p);
-  }
-  const n = pages.length;
-  pages.forEach((p, i) => { p.counter = `${pad2(i + 1)} / ${pad2(n)}`; });
+    for (const p of entryReadPages(e, undefined, `${pad2(i + 1)} / ${pad2(list.length)}`)) pages.push(p);
+  });
   return { pages, first };
 }

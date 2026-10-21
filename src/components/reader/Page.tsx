@@ -1,4 +1,4 @@
-import type { PageData } from '@/lib/pagination';
+import { CATS, type PageData } from '@/lib/pagination';
 
 export function Grain({ id }: { id: string }) {
   return (
@@ -13,7 +13,7 @@ export function Grain({ id }: { id: string }) {
 }
 
 /** Tek bir tam ekran sayfa. Okur tarafında ve yönetim önizlemesinde aynen kullanılır. */
-export function Page({ pg, reader, grainId = 'g' }: { pg: PageData; reader?: string; grainId?: string }) {
+export function Page({ pg, reader, grainId = 'g', onNext, hasNext }: { pg: PageData; reader?: string; grainId?: string; onNext?: () => void; hasNext?: boolean }) {
   return (
     <div className="page">
       <div className="gutter" aria-hidden="true" />
@@ -24,7 +24,7 @@ export function Page({ pg, reader, grainId = 'g' }: { pg: PageData; reader?: str
           <span className="meta" style={{ letterSpacing: '.26em', fontSize: 10 }}>{pg.top}</span>
         </header>
 
-        <div className={'pbody' + (pg.mid ? ' mid' : '')}>
+        <div className={'pbody' + (pg.mid ? ' mid' : '') + (pg.kind === 'read' ? ' read' : '')}>
           {pg.kind === 'title' && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
               <span className="disp" style={{ fontSize: 54, fontWeight: 600, letterSpacing: '.26em', paddingLeft: '.26em', lineHeight: 1 }}>SEPYA</span>
@@ -54,6 +54,40 @@ export function Page({ pg, reader, grainId = 'g' }: { pg: PageData; reader?: str
               <p className="disp" style={{ margin: 0, fontSize: 34, fontStyle: 'italic', fontWeight: 500, lineHeight: 1.1 }}>Henüz yazılmadı.</p>
               <p style={{ margin: '16px 0 0', maxWidth: 250, fontSize: 18, lineHeight: 1.6, color: 'var(--soft)' }}>Bu sayfalar şimdilik boş. Bir şeyler birikiyor; acele etmiyoruz.</p>
             </div>
+          )}
+
+          {pg.kind === 'cover' && (
+            <div className={'cvr' + (pg.coverSrc ? '' : ' noimg')}>
+              {pg.coverSrc && (
+                <figure className="cvimg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={pg.coverSrc} alt="" draggable={false} decoding="async" />
+                </figure>
+              )}
+              <h1 className="disp cvtitle">{pg.title}</h1>
+              <span className="rule" aria-hidden="true" style={{ margin: '22px 0 16px' }} />
+              {pg.category && <span className="meta" style={{ letterSpacing: '.26em', fontSize: 9.5 }}>{CATS[pg.category].one}</span>}
+            </div>
+          )}
+
+          {pg.kind === 'read' && (
+            <article>
+              <h1 className="disp ptitle">{pg.title}</h1>
+              {pg.poem != null && <div className="poem">{pg.poem}</div>}
+              {pg.paras && (
+                <div className="prose">
+                  {pg.paras.map((p, i) => <p key={i} className={p.cont ? 'cont' : undefined}>{p.t}</p>)}
+                </div>
+              )}
+              <div className="rend">
+                <span className="rule" aria-hidden="true" />
+                {hasNext && onNext ? (
+                  <button type="button" className="rnext" onClick={onNext}>sonraki yazı <ArrowR /></button>
+                ) : (
+                  <span className="rdone">Şimdilik hepsi bu.</span>
+                )}
+              </div>
+            </article>
           )}
 
           {pg.kind === 'entry' && (

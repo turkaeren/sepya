@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import EntryEditor from '@/components/admin/EntryEditor';
 import { getEntry } from '@/lib/entries';
 import { dotsDT } from '@/lib/format';
-import type { Category } from '@/lib/pagination';
+import { coverSrcFor, type Category } from '@/lib/pagination';
 import { deleteEntryAction, unpublishEntryAction } from '../../../actions';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +13,8 @@ const FLASH: Record<string, string> = {
   taslak: 'Taslak kaydedildi. Okurlar görmüyor.',
   kaydedildi: 'Kaydedildi.',
   kaldirildi: 'Yayından kaldırıldı.',
-  silinmedi: 'Silmek için kutuya “sil” yaz.'
+  silinmedi: 'Silmek için kutuya “sil” yaz.',
+  gorselhata: 'Yazı kaydedildi ama görsel yüklenemedi. Başka bir görselle tekrar dene.'
 };
 
 export default async function Duzenle({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ durum?: string }> }) {
@@ -24,11 +25,12 @@ export default async function Duzenle({ params, searchParams }: { params: Promis
 
   return (
     <>
-      {flash && <div className={sp.durum === 'silinmedi' ? 'alertbar' : 'okbar'} role="status">{flash}</div>}
+      {flash && <div className={sp.durum === 'silinmedi' || sp.durum === 'gorselhata' ? 'alertbar' : 'okbar'} role="status">{flash}</div>}
       <EntryEditor
         key={e.updated_at}
         heading="Düzenle"
         sub={`${e.published ? 'Yayında' : 'Taslak'} · oluşturuldu ${dotsDT(e.created_at)} · güncellendi ${dotsDT(e.updated_at)}`}
+        initialCover={coverSrcFor(e.id, e.cover_url)}
         initial={{ id: e.id, title: e.title, category: e.category as Category, entry_date: e.entry_date, content: e.content, published: e.published, sort_order: e.sort_order }}
       >
         <div style={{ borderTop: '1px solid #E3DED3', paddingTop: 18, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
