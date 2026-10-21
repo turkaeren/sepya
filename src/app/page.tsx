@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const session = await getReaderSession();
-  if (!session) return <Gate initialStage="pin" />;
-  if (!session.name) return <Gate initialStage="name" suggestedName={await lastNameForVisitor()} />;
+  if (!session) return <Gate suggestedName={await lastNameForVisitor()} />;
+  if (!session.name) return <Gate hasSession suggestedName={await lastNameForVisitor()} />;
 
   // İçerik yalnızca geçerli bir oturum varken sunucudan gelir; herkese açık bir içerik adresi yoktur.
   const [entries] = await Promise.all([getPublishedEntries(), touchSession(session.id)]);

@@ -37,16 +37,16 @@ export async function pinInfo() {
   return data ? { updatedAt: data.updated_at as string } : null;
 }
 
-async function record(info: ClientInfo, success: boolean, outcome: 'ok' | 'fail' | 'wait' | 'blocked') {
+async function record(info: ClientInfo, success: boolean, outcome: 'ok' | 'fail' | 'wait' | 'blocked', name: string | null) {
   await db().from('pin_attempts').insert({
-    ip: info.ip, country: info.country, city: info.city, device: info.device, os: info.os,
+    name, ip: info.ip, country: info.country, city: info.city, device: info.device, os: info.os,
     browser: info.browser, user_agent: info.userAgent, success, outcome
   });
 }
 
 const secondsUntil = (t: number) => Math.max(1, Math.ceil((t - Date.now()) / 1000));
 
-export async function attemptPin(pin: string, info: ClientInfo): Promise<PinResult> {
+export async function attemptPin(pin: string, info: ClientInfo, name: string | null = null): Promise<PinResult> {
   const now = Date.now();
   const sb = db();
 
@@ -54,7 +54,7 @@ export async function attemptPin(pin: string, info: ClientInfo): Promise<PinResu
   if (info.ip) {
     const { data: block } = await sb.from('ip_blocks').select('until').eq('ip', info.ip).maybeSingle();
     if (block && new Date(block.until).getTime() > now) {
-      await record(info, false, 'blocked');
+      await record(info, false, 'blocked', name);
       return { state: 'blocked', retryAfter: secondsUntil(new Date(block.until).getTime()) };
     }
   }
@@ -64,7 +64,7 @@ export async function attemptPin(pin: string, info: ClientInfo): Promise<PinResu
   const { count: globalFails } = await sb.from('pin_attempts').select('id', { count: 'exact', head: true })
     .eq('outcome', 'fail').gte('attempted_at', since15);
   if ((globalFails ?? 0) >= PIN_RULES.globalLimit) {
-    await record(info, false, 'wait');
+    await record(info, false, 'wait', name);
     return { state: 'wait', retryAfter: PIN_RULES.globalWaitSeconds };
   }
 
@@ -88,7 +88,7 @@ export async function attemptPin(pin: string, info: ClientInfo): Promise<PinResu
   if (consecutive > 0 && consecutive % PIN_RULES.waitEvery === 0) {
     const until = lastFailAt + PIN_RULES.waitSeconds * 1000;
     if (until > now) {
-      await record(info, false, 'wait');
+      await record(info, false, 'wait', name);
       return { state: 'wait', retryAfter: secondsUntil(until) };
     }
   }
@@ -99,11 +99,11 @@ export async function attemptPin(pin: string, info: ClientInfo): Promise<PinResu
   const ok = /^\d{4}$/.test(pin) && (await verifySecret(setting.value, pin));
 
   if (ok) {
-    await record(info, true, 'ok');
+    await record(info, true, 'ok', name);
     return { state: 'ok' };
   }
 
-  await record(info, false, 'fail');
+  await record(info, false, 'fail', name);
   const fails = consecutive + 1;
   if (info.ip) {
     const t15 = now - PIN_RULES.burstWindowMin * 60000;

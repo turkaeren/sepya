@@ -20,7 +20,7 @@ export default async function Dashboard() {
     sb.from('v_sessions').select('id, name, device, browser, city, country, created_at, last_seen_at, status').eq('status', 'active').order('last_seen_at', { ascending: false }).limit(10),
     sb.from('entries').select('category, published'),
     sb.from('pin_attempts').select('id', { count: 'exact', head: true }).eq('outcome', 'fail').gte('attempted_at', new Date(Date.now() - 86400000).toISOString()),
-    sb.from('pin_attempts').select('attempted_at, ip, country, device, browser, outcome').neq('outcome', 'ok').order('attempted_at', { ascending: false }).limit(5),
+    sb.from('pin_attempts').select('attempted_at, name, ip, country, device, browser, outcome').neq('outcome', 'ok').order('attempted_at', { ascending: false }).limit(5),
     sb.from('v_entry_stats').select('entry_id, views').gt('views', 0).order('views', { ascending: false }).limit(5),
     failAlert()
   ]);
@@ -100,7 +100,7 @@ export default async function Dashboard() {
             : (recentFails.data ?? []).map((f, i) => (
               <div className="li" key={i}>
                 <span className="mono" style={{ width: 92 }}>{shortDT(f.attempted_at)}</span>
-                <div className="grow"><div className="t" style={{ fontWeight: 400 }}>{f.country ?? 'Bilinmiyor'} · {f.device} / {f.browser}</div><div className="s mono">{f.ip ?? '—'}</div></div>
+                <div className="grow"><div className="t">{f.name ?? 'isimsiz'}</div><div className="s">{f.country ?? 'Bilinmiyor'} · {f.device} / {f.browser} · <span className="mono">{f.ip ?? '—'}</span></div></div>
                 <span className={OUTCOME[f.outcome]?.[1] ?? 'pill'}>{OUTCOME[f.outcome]?.[0] ?? f.outcome}</span>
               </div>
             ))}

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { isSameOrigin } from '@/lib/client-info';
-import { cleanName, getReaderSession } from '@/lib/reader-session';
+import { getReaderSession } from '@/lib/reader-session';
+import { checkName } from '@/lib/name';
 import { db } from '@/lib/db';
 
 export const runtime = 'nodejs';
@@ -11,13 +12,11 @@ export async function POST(req: Request) {
   const session = await getReaderSession();
   if (!session) return NextResponse.json({ ok: false }, { status: 401 });
 
-  let name: string | null = null;
-  try {
-    name = cleanName((await req.json())?.name);
-  } catch {
-    name = null;
-  }
-  if (!name) return NextResponse.json({ ok: false }, { status: 400 });
+  let raw: unknown = null;
+  try { raw = (await req.json())?.name; } catch { raw = null; }
+  const nc = checkName(raw);
+  if (!nc.ok) return NextResponse.json({ ok: false, reason: nc.reason }, { status: 400 });
+  const name = nc.name;
 
   const { error } = await db()
     .from('reader_sessions')

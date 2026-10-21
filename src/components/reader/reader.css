@@ -210,3 +210,9 @@
 
 .sp .rail .rl{opacity:0;padding:3px 7px;border-radius:2px;background:#F1E7D5;box-shadow:0 0 0 1px rgba(43,34,28,.08);transition:top .6s cubic-bezier(.2,.7,.2,1),opacity .5s ease}
 .sp .rail .rl.show,.sp .rail:hover .rl,.sp .rail:focus-visible .rl{opacity:1}
+
+/* —— İsim hatası ve "sen değil misin" —— */
+.sp .nerr{margin:0;min-height:22px;font-size:16px;font-style:italic;color:var(--accent)}
+.sp .nm.bad{border-bottom-color:var(--accent)}
+.sp .whoami{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 34px);margin:0 auto;width:max-content;min-height:44px;padding:0 12px;font-size:15px;font-style:italic;color:var(--soft);opacity:.8}
+.sp .whoami:hover{opacity:1;color:var(--ink)}

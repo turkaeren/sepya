@@ -39,7 +39,7 @@ export async function touchSession(id: string) {
   await db().from('reader_sessions').update({ last_seen_at: new Date().toISOString() }).eq('id', id);
 }
 
-export async function createReaderSession(info: ClientInfo) {
+export async function createReaderSession(info: ClientInfo, name: string | null = null) {
   const jar = await cookies();
   const token = randomToken();
   const existingVisitor = jar.get(VISITOR_COOKIE)?.value;
@@ -49,6 +49,7 @@ export async function createReaderSession(info: ClientInfo) {
   const { error } = await db().from('reader_sessions').insert({
     token_hash: sha256(token),
     visitor_id: visitorId,
+    name,
     ip: info.ip,
     country: info.country,
     city: info.city,
