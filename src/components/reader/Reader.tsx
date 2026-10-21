@@ -129,7 +129,16 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
           </button>
         )}
 
-        <button type="button" className="tbtn lockbtn" aria-label="Kilitle" onClick={lock}><Lock /></button>
+        <nav className={"topnav" + (wheel ? " hid" : "")} aria-label="Gezinme">
+          {n > 0 && (
+            <button type="button" className="tnav tmenu" aria-haspopup="dialog" aria-expanded={wheel} onClick={openWheel}>
+              <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h11M0 11h16" stroke="currentColor" strokeWidth="1.3" fill="none" /></svg>
+              <span>Yazılar</span>
+            </button>
+          )}
+          <span className="tsep" aria-hidden="true" />
+          <button type="button" className="tnav lk" aria-label="Kilitle" onClick={lock}><Lock /></button>
+        </nav>
       </main>
 
       {wheel && (
