@@ -243,3 +243,24 @@
 .sp .cvimg img{display:block;width:100%;height:auto;max-height:44vh;object-fit:cover;-webkit-user-drag:none;user-select:none}
 .sp .cvtitle{margin:0;font-size:34px;font-weight:500;line-height:1.12;letter-spacing:-.005em;overflow-wrap:anywhere}
 .sp .cvr.noimg .cvtitle{font-size:44px;font-style:italic;line-height:1.08}
+
+/* —— İmza (yazının sağ altı) —— */
+.sp .sig{margin:34px 4px 0 0;text-align:right;font-family:'Abril Fatface','Cormorant Garamond',Georgia,serif;font-size:30px;line-height:1;letter-spacing:.04em;color:var(--accent);opacity:.92;overflow-wrap:anywhere;transform:rotate(-2deg);transform-origin:100% 100%}
+
+/* —— Not bırak —— */
+.sp .nbox{margin-top:46px;padding-top:22px;border-top:1px solid rgba(43,34,28,.13)}
+.sp .nopen{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0;border:0;background:none;font-family:'EB Garamond',Georgia,serif;font-size:16.5px;font-style:italic;color:var(--soft);cursor:pointer;transition:color .2s}
+.sp .nopen:hover,.sp .nopen:focus-visible{color:var(--accent)}
+.sp .nopen.inline{min-height:0;display:inline;font-size:inherit;text-decoration:underline;text-decoration-color:rgba(123,36,49,.4);text-underline-offset:4px}
+.sp .nform{display:flex;flex-direction:column;gap:6px;animation:spRise .45s cubic-bezier(.2,.7,.2,1) both}
+.sp .nlab{font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:9.5px;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--soft)}
+.sp .nta{width:100%;display:block;margin:6px 0 0;padding:0 2px;border:0;border-radius:0;resize:none;outline:none;background:repeating-linear-gradient(180deg,transparent 0 29px,rgba(43,34,28,.16) 29px 30px);font-family:'EB Garamond',Georgia,serif;font-size:18px;line-height:30px;color:var(--ink);user-select:text;-webkit-user-select:text;-webkit-appearance:none;appearance:none;caret-color:var(--accent)}
+.sp .nta::placeholder{color:#8A7B6C;font-style:italic}
+.sp .nta:disabled{opacity:.6}
+.sp .nfoot{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:6px}
+.sp .ncount{margin-right:auto;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:10px;letter-spacing:.12em;color:var(--soft)}
+.sp .nbtn2{min-height:44px;padding:0 10px;border:0;background:none;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:10px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--soft);cursor:pointer;transition:color .2s}
+.sp .nbtn2:hover,.sp .nbtn2:focus-visible{color:var(--ink)}
+.sp .nbtn2.go{color:var(--accent)}
+.sp .nerr2{margin:2px 0 0;font-size:15px;font-style:italic;color:var(--accent)}
+.sp .nsent{margin:0;font-size:16.5px;font-style:italic;color:var(--soft);animation:spRise .45s cubic-bezier(.2,.7,.2,1) both}

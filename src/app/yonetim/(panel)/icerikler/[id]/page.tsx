@@ -31,7 +31,7 @@ export default async function Duzenle({ params, searchParams }: { params: Promis
         heading="Düzenle"
         sub={`${e.published ? 'Yayında' : 'Taslak'} · oluşturuldu ${dotsDT(e.created_at)} · güncellendi ${dotsDT(e.updated_at)}`}
         initialCover={coverSrcFor(e.id, e.cover_url)}
-        initial={{ id: e.id, title: e.title, category: e.category as Category, entry_date: e.entry_date, content: e.content, published: e.published, sort_order: e.sort_order }}
+        initial={{ id: e.id, title: e.title, category: e.category as Category, entry_date: e.entry_date, content: e.content, published: e.published, sort_order: e.sort_order, signature: e.signature ?? '' }}
       >
         <div style={{ borderTop: '1px solid #E3DED3', paddingTop: 18, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           <span className="hint" style={{ flex: '1 1 220px' }}>Değişiklikler kaydedildiği anda okur tarafına yansır.</span>

@@ -15,6 +15,7 @@ export interface EditorEntry {
   content: string;
   published: boolean;
   sort_order: number;
+  signature: string;
 }
 
 const DEVICES: [number, number][] = [[375, 812], [390, 844], [430, 932]];
@@ -96,7 +97,7 @@ export default function EntryEditor({ initial, initialCover = null, heading, sub
     setCoverErr('');
   }
 
-  const pages = useMemo(() => entryReadPages({ id: e.id, title: e.title, category: e.category, entry_date: e.entry_date, content: e.content }, coverSrc), [e, coverSrc]);
+  const pages = useMemo(() => entryReadPages({ id: e.id, title: e.title, category: e.category, entry_date: e.entry_date, content: e.content, signature: e.signature }, coverSrc), [e, coverSrc]);
   const p = Math.min(pi, pages.length - 1);
   const pg = pages[p];
   const words = e.content.split(/\s+/).filter(Boolean).length;
@@ -126,6 +127,7 @@ export default function EntryEditor({ initial, initialCover = null, heading, sub
         <input type="hidden" name="entry_date" value={e.entry_date} />
         <input type="hidden" name="content" value={e.content} />
         <input type="hidden" name="sort_order" value={e.sort_order} />
+        <input type="hidden" name="signature" value={e.signature} />
       </>}
 
       <Link className="back" href="/yonetim/icerikler">← İçerikler</Link>
@@ -188,6 +190,10 @@ export default function EntryEditor({ initial, initialCover = null, heading, sub
               {coverErr && <span className="hint" role="alert" style={{ color: '#9B1C1C' }}>{coverErr}</span>}
             </div>
             <div className="row2">
+              <div className="fld"><label className="lab" htmlFor="signature">İmza (baş harf)</label>
+                <input id="signature" name="signature" className="inp" type="text" value={e.signature} maxLength={12} autoComplete="off" placeholder="E.T." onChange={(x) => set({ signature: x.target.value })} style={{ maxWidth: 160, fontFamily: "'Abril Fatface', Georgia, serif", fontSize: 20 }} />
+                <span className="hint">Yazının sağ altında kalın, retro bir yazıyla görünür. Boş bırakırsan görünmez.</span>
+              </div>
               <div className="fld"><label className="lab" htmlFor="sort_order">Aynı gün içindeki sıra</label>
                 <input id="sort_order" name="sort_order" className="inp mono" type="number" min={-999} max={999} value={e.sort_order} onChange={(x) => set({ sort_order: Number(x.target.value) || 0 })} style={{ maxWidth: 120 }} />
                 <span className="hint">Küçük sayı önce gelir. Genelde 0 kalır.</span>

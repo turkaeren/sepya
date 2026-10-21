@@ -68,6 +68,7 @@ export async function saveEntryAction(_: FormState, f: FormData): Promise<FormSt
   const entry_date = str(f, 'entry_date');
   const content = str(f, 'content').replace(/\r/g, '');
   const sort_order = Number.parseInt(str(f, 'sort_order') || '0', 10) || 0;
+  const signature = str(f, 'signature').trim().slice(0, 12);
   const removeCover = str(f, 'cover_remove') === '1';
   const rawCover = f.get('cover');
   const cover = rawCover instanceof File && rawCover.size > 0 ? rawCover : null;
@@ -81,7 +82,7 @@ export async function saveEntryAction(_: FormState, f: FormData): Promise<FormSt
   if (cover && cover.size > COVER_MAX) return { error: 'Görsel 3 MB’tan büyük olamaz.' };
   if (id && !UUID.test(id)) return { error: 'Geçersiz içerik.' };
 
-  const row: Record<string, unknown> = { title, category, entry_date, content, sort_order, published: intent === 'publish' };
+  const row: Record<string, unknown> = { title, category, entry_date, content, sort_order, signature: signature || null, published: intent === 'publish' };
 
   let savedId = id;
   let oldCover: string | null = null;
@@ -192,44 +193,26 @@ export async function changePinAction(_: FormState, f: FormData): Promise<FormSt
   return { ok: 'PIN değişti. Açık okur oturumları kapatıldı.' };
 }
 
-// —— WordPress içe aktarma ——————————————————————————————————————————
+// —— Okur notları ———————————————————————————————————————————————————
 
-export type ImportState = { error?: string; ok?: string; count?: number; siir?: number; not?: number; deleted?: number } | undefined;
-
-export async function importAction(_: ImportState, f: FormData): Promise<ImportState> {
+export async function markNoteReadAction(f: FormData) {
   await requireAdmin();
-  const { fetchFromWordPressCom, parseWxr, ImportError } = await import('@/lib/wp-import');
-  let posts;
-  try {
-    if (str(f, 'mode') === 'file') {
-      const file = f.get('file');
-      if (!(file instanceof File) || file.size === 0) return { error: 'Bir .xml dosyası seç.' };
-      if (file.size > 20 * 1024 * 1024) return { error: 'Dosya 20 MB’tan büyük.' };
-      posts = parseWxr(await file.text());
-    } else {
-      posts = await fetchFromWordPressCom(str(f, 'site'));
-    }
-  } catch (e) {
-    return { error: e instanceof ImportError ? e.message : 'WordPress’e ulaşılamadı. Dışa aktarma dosyasıyla dene.' };
-  }
-  if (!posts.length) return { error: 'Hiç yayımlanmış yazı bulunamadı.' };
+  const id = str(f, 'id');
+  if (!UUID.test(id)) return;
+  await db().from('reader_notes').update({ read_at: new Date().toISOString() }).eq('id', id).is('read_at', null);
+  revalidatePath('/yonetim', 'layout');
+}
 
-  const sb = db();
-  let deleted = 0;
-  if (str(f, 'replace') === '1') {
-    const { count, error } = await sb.from('entries').delete({ count: 'exact' }).not('id', 'is', null);
-    if (error) return { error: 'Eski içerikler silinemedi: ' + error.message };
-    deleted = count ?? 0;
-  }
-  const rows = posts.map((p) => ({
-    title: p.title, content: p.content.slice(0, 50000), category: p.category, entry_date: p.entry_date, published: true, sort_order: 0
-  }));
-  for (let i = 0; i < rows.length; i += 200) {
-    const { error } = await sb.from('entries').insert(rows.slice(i, i + 200));
-    if (error) return { error: `Aktarma ${i}. yazıda durdu: ${error.message}` };
-  }
-  revalidatePath('/yonetim/icerikler');
-  revalidatePath('/');
-  const siir = posts.filter((p) => p.category === 'siir').length;
-  return { ok: `${posts.length} yazı aktarıldı.`, count: posts.length, siir, not: posts.length - siir, deleted };
+export async function markAllNotesReadAction() {
+  await requireAdmin();
+  await db().from('reader_notes').update({ read_at: new Date().toISOString() }).is('read_at', null);
+  revalidatePath('/yonetim', 'layout');
+}
+
+export async function deleteNoteAction(f: FormData) {
+  await requireAdmin();
+  const id = str(f, 'id');
+  if (!UUID.test(id)) return;
+  await db().from('reader_notes').delete().eq('id', id);
+  revalidatePath('/yonetim', 'layout');
 }

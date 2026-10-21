@@ -13,6 +13,7 @@ export interface EntryLite {
   entry_date: string;
   sort_order?: number;
   cover_url?: string | null;
+  signature?: string | null;
 }
 
 export interface Para { t: string; cont: boolean }
@@ -41,6 +42,8 @@ export interface PageData {
   paras?: Para[];
   // cover (yazılar arası geçiş sayfası)
   coverSrc?: string | null;
+  // read
+  signature?: string | null;
 }
 
 export const CATS: Record<Category, { label: string; one: string; many: string; epi: string }> = {
@@ -180,7 +183,7 @@ export function entryReadPages(e: Omit<EntryLite, 'id'> & { id?: string }, cover
   const src = coverSrc !== undefined ? coverSrc : coverSrcFor(e.id, e.cover_url);
   return [
     { key: `${key}:kapak`, kind: 'cover', top, counter, mid: true, entryId: e.id, title, category: e.category, coverSrc: src, part: 0, parts: 1 },
-    { key: `${key}:oku`, kind: 'read', top, counter, mid: false, entryId: e.id, title, category: e.category, part: 1, parts: 1, isFirst: true, ...fullChunk(e) }
+    { key: `${key}:oku`, kind: 'read', top, counter, mid: false, entryId: e.id, title, category: e.category, part: 1, parts: 1, isFirst: true, signature: (e.signature ?? '').trim() || null, ...fullChunk(e) }
   ];
 }
 

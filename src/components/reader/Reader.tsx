@@ -72,6 +72,8 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
   useEffect(() => {
     if (wheel) return;
     const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT')) return;
       if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); go(1); }
       if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(-1); }
     };
@@ -101,7 +103,7 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
       <main className="scr screen">
         <div
           className={'stage' + (page.kind === 'read' ? ' isread' : '')}
-          onPointerDown={(e) => { swipe.current = { x: e.clientX, y: e.clientY }; }}
+          onPointerDown={(e) => { if ((e.target as HTMLElement).closest?.('.nbox')) { swipe.current = null; return; } swipe.current = { x: e.clientX, y: e.clientY }; }}
           onPointerUp={(e) => {
             const s = swipe.current; swipe.current = null;
             if (!s) return;

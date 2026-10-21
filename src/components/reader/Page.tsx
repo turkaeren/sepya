@@ -1,4 +1,5 @@
 import { CATS, type PageData } from '@/lib/pagination';
+import NoteBox from './NoteBox';
 
 export function Grain({ id }: { id: string }) {
   return (
@@ -79,6 +80,8 @@ export function Page({ pg, reader, grainId = 'g', onNext, hasNext }: { pg: PageD
                   {pg.paras.map((p, i) => <p key={i} className={p.cont ? 'cont' : undefined}>{p.t}</p>)}
                 </div>
               )}
+              {pg.signature && <div className="sig" aria-label="İmza">{pg.signature}</div>}
+              {reader && pg.entryId && <NoteBox key={pg.entryId} entryId={pg.entryId} />}
               <div className="rend">
                 <span className="rule" aria-hidden="true" />
                 {hasNext && onNext ? (

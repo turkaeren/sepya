@@ -13,7 +13,7 @@ export interface EntryRow extends EntryLite {
 export async function getPublishedEntries(): Promise<EntryLite[]> {
   const { data, error } = await db()
     .from('entries')
-    .select('id, title, content, category, entry_date, sort_order, cover_url')
+    .select('id, title, content, category, entry_date, sort_order, cover_url, signature')
     .eq('published', true)
     .order('entry_date', { ascending: false })
     .order('sort_order', { ascending: true });
