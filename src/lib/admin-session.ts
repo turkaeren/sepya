@@ -9,7 +9,7 @@ import type { ClientInfo } from './client-info';
 export const ADMIN_COOKIE = 'sepya_a';
 const ABS_HOURS = 8;
 const IDLE_MINUTES = 120;
-export const ADMIN_RULES = { maxFails: 5, windowMin: 15 };
+export const ADMIN_RULES = { maxFails: 5, windowMin: 15, accountMaxFails: 10, accountWindowMin: 60 };
 const secure = process.env.NODE_ENV === 'production';
 
 export interface Admin { sessionId: string; adminId: string; email: string }
@@ -82,7 +82,8 @@ let dummyHash: Promise<string> | null = null;
 
 export type LoginResult = { ok: true } | { ok: false; error: string };
 
-export async function adminLogin(emailRaw: string, password: string, code: string, info: ClientInfo): Promise<LoginResult> {
+/** Yönetici girişi: e-posta + parola. (İki adımlı doğrulama kullanıcının isteğiyle kapalı.) */
+export async function adminLogin(emailRaw: string, password: string, info: ClientInfo): Promise<LoginResult> {
   const email = emailRaw.trim().toLowerCase();
   const sb = db();
 
@@ -96,16 +97,23 @@ export async function adminLogin(emailRaw: string, password: string, code: strin
     }
   }
 
-  const { data: user } = await sb.from('admin_users').select('id, password_hash, totp_secret').eq('email', email).maybeSingle();
+  // Hesap bazlı kilit: farklı IP'lerden gelen denemeleri de sayar
+  if (email) {
+    const since = new Date(Date.now() - ADMIN_RULES.accountWindowMin * 60000).toISOString();
+    const { count } = await sb.from('admin_login_events').select('id', { count: 'exact', head: true })
+      .eq('email', email).eq('success', false).gte('at', since);
+    if ((count ?? 0) >= ADMIN_RULES.accountMaxFails) {
+      await logEvent(info, email, false, 'hesap kilitli');
+      return { ok: false, error: 'Bu hesap çok fazla hatalı deneme yüzünden bir saatliğine kilitlendi.' };
+    }
+  }
+
+  const { data: user } = await sb.from('admin_users').select('id, password_hash').eq('email', email).maybeSingle();
   dummyHash = dummyHash || hashSecret('sepya-yok-boyle-biri');
   const passOk = await verifySecret(user?.password_hash ?? (await dummyHash), password);
   if (!user || !passOk) {
     await logEvent(info, email, false, 'parola');
-    return { ok: false, error: 'E-posta, parola ya da kod hatalı.' };
-  }
-  if (!checkTotp(user.totp_secret, code.trim())) {
-    await logEvent(info, email, false, 'kod');
-    return { ok: false, error: 'E-posta, parola ya da kod hatalı.' };
+    return { ok: false, error: 'E-posta ya da parola hatalı.' };
   }
   await logEvent(info, email, true, 'giriş');
   await startAdminSession(user.id, info);

@@ -12,13 +12,8 @@ export default function LoginForm() {
       {state?.error && <p className="err" role="alert">{state.error}</p>}
       <div className="fld"><label className="lab" htmlFor="email">E-posta</label><input id="email" name="email" className="inp" type="email" autoComplete="username" required /></div>
       <div className="fld"><label className="lab" htmlFor="password">Parola</label><input id="password" name="password" className="inp" type="password" autoComplete="current-password" required /></div>
-      <div className="fld">
-        <label className="lab" htmlFor="code">Doğrulama kodu</label>
-        <input id="code" name="code" className="inp mono" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} pattern="\d{6}" placeholder="6 haneli kod" required style={{ letterSpacing: '.3em' }} />
-        <span className="hint">Kimlik doğrulayıcı uygulamandaki kod.</span>
-      </div>
       <button className="btn pri full" type="submit" disabled={pending} style={{ marginTop: 6, minHeight: 44 }}>{pending ? 'Kontrol ediliyor…' : 'Giriş yap'}</button>
-      <p className="hint" style={{ margin: '16px 0 0', lineHeight: 1.5 }}>Her deneme kaydedilir: zaman, IP, cihaz. 5 hatalı denemeden sonra giriş 15 dakika kilitlenir.</p>
+      <p className="hint" style={{ margin: '16px 0 0', lineHeight: 1.5 }}>Her deneme kaydedilir: zaman, IP, cihaz. Aynı yerden 5 hatalı denemede 15 dakika, hesaba saatte 10 hatalı denemede 1 saat kilit.</p>
     </form>
   );
 }

@@ -26,7 +26,7 @@ Tarayıcı veritabanına hiç bağlanmaz. Tüm tablolarda RLS açık ve politika
   - aynı IP'den 24 sa'te 20 hata → IP 24 sa engel
   - tüm IP'lerden 15 dk'da 60 hata → herkese 60 sn bekleme (dağıtık deneme)
 - Oturum çerezleri `HttpOnly`, `Secure`, `SameSite=Strict`. Veritabanında yalnızca çerezin SHA-256 özeti durur. Okur oturumu 12 saat, 30 dk hareketsizlikte biter.
-- Yönetici girişi ayrı: e-posta + parola + TOTP (kimlik doğrulayıcı uygulama). 15 dk'da 5 hata → kilit. Tüm girişler loglanır.
+- Yönetici girişi ayrı: e-posta + parola. Aynı IP'den 15 dk'da 5 hata → 15 dk kilit; aynı hesaba saatte 10 hata → 1 sa kilit. Tüm girişler loglanır.
 - Yönetim panelinden okur oturumu sonlandırma, tümünü sonlandırma, IP engelleme/kaldırma, PIN değiştirme (değişince tüm okur oturumları kapanır).
 - API rotaları yalnızca aynı kökenden gelen istekleri kabul eder; sunucu eylemleri Next.js'in köken denetiminden geçer.
 - Güvenlik başlıkları: CSP, HSTS, `X-Frame-Options: DENY`, `noindex`.

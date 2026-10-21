@@ -16,7 +16,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 // —— Giriş / kurulum ————————————————————————————————————————————————
 
 export async function loginAction(_: FormState, f: FormData): Promise<FormState> {
-  const res = await adminLogin(str(f, 'email'), str(f, 'password'), str(f, 'code'), await clientInfo());
+  const res = await adminLogin(str(f, 'email'), str(f, 'password'), await clientInfo());
   if (!res.ok) return { error: res.error };
   redirect('/yonetim');
 }

@@ -59,7 +59,9 @@ export default async function Guvenlik() {
             <li><span>Okur PIN’i</span><span className="mono">argon2id özeti</span></li>
             <li><span>Oturum çerezi</span><span className="mono">HttpOnly · Secure · SameSite=Strict</span></li>
             <li><span>Okur oturumu</span><span className="mono">12 sa · 30 dk boşta</span></li>
-            <li><span>Yönetici girişi</span><span className="mono">parola + TOTP · {ADMIN_RULES.maxFails} hata → {ADMIN_RULES.windowMin} dk kilit</span></li>
+            <li><span>Yönetici girişi</span><span className="mono">e-posta + parola</span></li>
+            <li><span>{ADMIN_RULES.maxFails} hata / {ADMIN_RULES.windowMin} dk, aynı IP</span><span className="mono">{ADMIN_RULES.windowMin} dk kilit</span></li>
+            <li><span>{ADMIN_RULES.accountMaxFails} hata / saat, aynı hesap</span><span className="mono">hesap 1 sa kilit</span></li>
           </ul>
           <div style={{ borderTop: '1px solid #EFEBE3', marginTop: 14, paddingTop: 16 }}>
             <PinForm />
