@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { buildSequence, sortEntries, type EntryLite, type PageData } from '@/lib/pagination';
 import { MONTHS, upTR, ymd } from '@/lib/format';
 import { Lock, Page } from './Page';
-import DateWheel from './DateWheel';
+import PostsPanel from './PostsPanel';
 import './reader.css';
 
 type Turn = { from: PageData; cls: string } | null;
@@ -40,6 +40,13 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
   const k = page.entryId ? list.findIndex((e) => e.id === page.entryId) : -1;
 
   useEffect(() => { const t = setTimeout(() => setDawn(false), 1900); return () => clearTimeout(t); }, []);
+  const [labelOn, setLabelOn] = useState(false);
+  useEffect(() => {
+    if (k < 0) return;
+    setLabelOn(true);
+    const t = setTimeout(() => setLabelOn(false), 2200);
+    return () => clearTimeout(t);
+  }, [k]);
 
   useEffect(() => {
     track({ kind: page.kind, entryId: page.entryId, part: page.part, category: page.category, label: page.title || null });
@@ -73,7 +80,7 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
 
   function openWheel() {
     setWheel(true);
-    track({ kind: 'menu', label: 'tarih çarkı' });
+    track({ kind: 'menu', label: 'yazılar' });
   }
 
   async function lock() {
@@ -114,11 +121,11 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
         </div>
 
         {n > 0 && (
-          <button type="button" className="rail" aria-label="Tarihe git" onClick={openWheel}>
+          <button type="button" className="rail" aria-label="Yazılar" onClick={openWheel}>
             <span className="line" />
             {list.map((e, i) => <span key={e.id} className="tick" style={{ top: (n > 1 ? (i / (n - 1)) * 100 : 50) + '%' }} />)}
             <span className={'cur' + (dawn ? ' hello' : '')} style={{ top: railTop + '%' }} />
-            <span className="rl" style={{ top: railTop + '%' }}>{railLabel}</span>
+            <span className={'rl' + (labelOn ? ' show' : '')} style={{ top: railTop + '%' }}>{railLabel}</span>
           </button>
         )}
 
@@ -126,9 +133,9 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
       </main>
 
       {wheel && (
-        <DateWheel
+        <PostsPanel
           list={list}
-          start={Math.max(0, k)}
+          current={k}
           onClose={() => setWheel(false)}
           onChoose={(i) => { setWheel(false); goTo(seq.first[list[i].id] ?? 0); }}
         />
