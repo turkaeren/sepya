@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { dayTick, getAnalytics } from '@/lib/admin-data';
+import { dayTick, getAnalytics, getSources } from '@/lib/admin-data';
 import { fmtDuration, nf } from '@/lib/format';
 import { Bars, HBars, Line, PairBars, StackBars } from '@/components/admin/Charts';
 
@@ -11,7 +11,7 @@ const CAT: Record<string, string> = { siir: 'Şiirler', not: 'Notlar', defter: '
 export default async function Analitik({ searchParams }: { searchParams: Promise<{ gun?: string }> }) {
   const sp = await searchParams;
   const days = RANGES.includes(Number(sp.gun)) ? Number(sp.gun) : 14;
-  const a = await getAnalytics(days);
+  const [a, src] = await Promise.all([getAnalytics(days), getSources(days)]);
   const labels = a.daily.map((d, i) => dayTick(d.d, i));
   const tail = a.daily.slice(-Math.min(days, 14));
   const tailLabels = tail.map((d, i) => dayTick(d.d, i));
@@ -32,6 +32,15 @@ export default async function Analitik({ searchParams }: { searchParams: Promise
       </div>
 
       <div className="gh" style={{ marginTop: 0 }}>
+        <section className="card">
+          <div className="ct"><h2>Nereden geldiler</h2><span className="x">giriş yapan oturum · {nf(src.total)}{src.unknown ? ` · ${src.unknown} eski oturumda bilinmiyor` : ''}</span></div>
+          <HBars data={src.sessions} empty="Bu aralıkta kaynak bilgisi olan giriş yok." />
+          {src.attempts.length > 0 && <>
+            <div className="ct" style={{ margin: '26px 0 16px' }}><h2>Kapıya gelip giremeyenler</h2><span className="x">başarısız deneme</span></div>
+            <HBars data={src.attempts} />
+          </>}
+          <p className="hint" style={{ margin: '16px 0 0' }}>“Doğrudan”: adres yazılarak, WhatsApp/DM’den ya da yer iminden açılmış. Paylaştığın bağlantının sonuna <span className="mono">?kaynak=isim</span> eklersen o adla görünür.</p>
+        </section>
         <section className="card">
           <div className="ct"><h2>Ziyaretçi / gün</h2><span className="x">Toplam {nf(a.totals.sessions)} oturum · {nf(a.totals.visitors)} okur</span></div>
           <Bars data={a.daily.map((d, i) => ({ v: d.visitors, l: dense && i % 7 ? '' : labels[i] }))} showValues={!dense} gap={dense ? 2 : 6} />

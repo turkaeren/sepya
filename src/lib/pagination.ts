@@ -13,7 +13,12 @@ export interface EntryLite {
   entry_date: string;
   sort_order?: number;
   cover_url?: string | null;
+  initials?: string | null;
+  initials_style?: InitialsStyle | null;
 }
+
+export type InitialsStyle = 'el' | 'daktilo' | 'gotik';
+export const INITIALS_STYLES: [InitialsStyle, string][] = [['el', 'El yazısı'], ['daktilo', 'Daktilo'], ['gotik', 'Gotik']];
 
 export interface Para { t: string; cont: boolean }
 export interface Chunk { poem?: string; paras?: Para[] }
@@ -41,6 +46,9 @@ export interface PageData {
   paras?: Para[];
   // cover (yazılar arası geçiş sayfası)
   coverSrc?: string | null;
+  // yazının sonunda, sağ altta
+  initials?: string;
+  initialsStyle?: InitialsStyle;
 }
 
 export const CATS: Record<Category, { label: string; one: string; many: string; epi: string }> = {
@@ -180,7 +188,7 @@ export function entryReadPages(e: Omit<EntryLite, 'id'> & { id?: string }, cover
   const src = coverSrc !== undefined ? coverSrc : coverSrcFor(e.id, e.cover_url);
   return [
     { key: `${key}:kapak`, kind: 'cover', top, counter, mid: true, entryId: e.id, title, category: e.category, coverSrc: src, part: 0, parts: 1 },
-    { key: `${key}:oku`, kind: 'read', top, counter, mid: false, entryId: e.id, title, category: e.category, part: 1, parts: 1, isFirst: true, ...fullChunk(e) }
+    { key: `${key}:oku`, kind: 'read', top, counter, mid: false, entryId: e.id, title, category: e.category, part: 1, parts: 1, isFirst: true, ...fullChunk(e), initials: e.initials?.trim() || undefined, initialsStyle: e.initials_style ?? 'el' }
   ];
 }
 

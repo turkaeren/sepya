@@ -2,7 +2,7 @@
 
 import { useActionState, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { entryReadPages, type Category } from '@/lib/pagination';
+import { entryReadPages, INITIALS_STYLES, type Category, type InitialsStyle } from '@/lib/pagination';
 import { Page } from '@/components/reader/Page';
 import { saveEntryAction, type FormState } from '@/app/yonetim/actions';
 import '@/components/reader/reader.css';
@@ -15,6 +15,8 @@ export interface EditorEntry {
   content: string;
   published: boolean;
   sort_order: number;
+  initials: string;
+  initials_style: InitialsStyle;
 }
 
 const DEVICES: [number, number][] = [[375, 812], [390, 844], [430, 932]];
@@ -96,7 +98,7 @@ export default function EntryEditor({ initial, initialCover = null, heading, sub
     setCoverErr('');
   }
 
-  const pages = useMemo(() => entryReadPages({ id: e.id, title: e.title, category: e.category, entry_date: e.entry_date, content: e.content }, coverSrc), [e, coverSrc]);
+  const pages = useMemo(() => entryReadPages({ id: e.id, title: e.title, category: e.category, entry_date: e.entry_date, content: e.content, initials: e.initials, initials_style: e.initials_style }, coverSrc), [e, coverSrc]);
   const p = Math.min(pi, pages.length - 1);
   const pg = pages[p];
   const words = e.content.split(/\s+/).filter(Boolean).length;
@@ -116,6 +118,7 @@ export default function EntryEditor({ initial, initialCover = null, heading, sub
     <form action={action}>
       <input type="hidden" name="id" value={e.id ?? ''} />
       <input type="hidden" name="category" value={e.category} />
+      <input type="hidden" name="initials_style" value={e.initials_style} />
       <input type="hidden" name="intent" ref={intentRef} defaultValue="" />
       <input type="hidden" name="cover_remove" value={removeCover ? '1' : ''} />
       {/* Dosya alanı her zaman sayfada kalır; önizlemeye geçince seçili görsel kaybolmaz */}
@@ -126,6 +129,7 @@ export default function EntryEditor({ initial, initialCover = null, heading, sub
         <input type="hidden" name="entry_date" value={e.entry_date} />
         <input type="hidden" name="content" value={e.content} />
         <input type="hidden" name="sort_order" value={e.sort_order} />
+        <input type="hidden" name="initials" value={e.initials} />
       </>}
 
       <Link className="back" href="/yonetim/icerikler">← İçerikler</Link>
@@ -186,6 +190,21 @@ export default function EntryEditor({ initial, initialCover = null, heading, sub
               </div>
               <span className="hint">Yazılar arasındaki geçiş sayfasında başlığın üstünde görünür. Görsel yoksa yalnızca başlık görünür.</span>
               {coverErr && <span className="hint" role="alert" style={{ color: '#9B1C1C' }}>{coverErr}</span>}
+            </div>
+            <div className="fld">
+              <label className="lab" htmlFor="initials">Baş harf</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <input id="initials" name="initials" className="inp" type="text" value={e.initials} maxLength={12} placeholder="ör. E.T." autoComplete="off"
+                  onChange={(x) => set({ initials: x.target.value })} style={{ maxWidth: 140 }} />
+                <div className="tabs" role="group" aria-label="Baş harf yazı tipi">
+                  {INITIALS_STYLES.map(([k, l]) => (
+                    <button key={k} type="button" className={'tab' + (e.initials_style === k ? ' on' : '')} aria-pressed={e.initials_style === k} onClick={() => set({ initials_style: k })}>
+                      <span className={'ifont i-' + k}>{e.initials.trim() || 'E.T.'}</span><span className="sr"> {l}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <span className="hint">Yazının sonunda, sağ altta retro bir imza gibi durur. Boş bırakırsan görünmez. Yeni yazıda son kullandığın gelir.</span>
             </div>
             <div className="row2">
               <div className="fld"><label className="lab" htmlFor="sort_order">Aynı gün içindeki sıra</label>

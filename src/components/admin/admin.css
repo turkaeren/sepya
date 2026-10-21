@@ -189,3 +189,14 @@
 .ad .devwrap{display:flex;justify-content:center;width:100%}
 .ad .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .ad .pager{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid var(--ln);font-size:13px;color:var(--mu)}
+
+/* —— Notlar —— */
+.ad .notelist{display:flex;flex-direction:column;gap:12px;max-width:760px}
+.ad .note{position:relative;padding:18px 20px}
+.ad .note.new{box-shadow:inset 3px 0 0 #7B2431}
+.ad .note .nh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.ad .note .nh form{display:inline}
+.ad .note .nm{margin-top:4px;font-size:12px;color:#6B655B}
+.ad .note .nent{font-family:inherit;font-style:italic}
+.ad .note .nbody{margin:14px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font-family:'EB Garamond',Georgia,serif;font-size:18px;line-height:1.55;color:#1B1A17}
+.ad .badge.ink{background:#1B1A17;color:#F4EFE6}

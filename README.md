@@ -73,6 +73,19 @@ npm run dev                  # http://localhost:3000
 
 ## Son güncellemeler
 
+- **Kaynak, notlar, baş harf** (migration `0005_source_notes_initials.sql`, uygulandı):
+  - **Nereden geldi:** `src/lib/source.ts` → `detectSource()`.
+    - Bakılan ipuçları: utm_source/kaynak etiketi, igsh/fbclid/gclid, uygulama içi tarayıcı user-agent'ı ve document.referrer. Gate ilk açılışta bunları alır, `/api/pin` ile gönderir.
+    - Kayıt yerleri: `reader_sessions.source` / `source_ref` (yalnızca alan adı) ve `pin_attempts.source`.
+    - Gösterildiği yerler: Analitik › “Nereden geldiler”, Ziyaretçiler ve Başarısız denemelerdeki “Kaynak” sütunu.
+    - Bağlantıya `?kaynak=isim` eklenirse o adla sayılır.
+  - **Okur notu:** okur arayüzünde sağ üstteki kalem ya da yazı sonundaki “bir not bırak” (`NoteSheet.tsx`).
+    - `/api/note`: okur oturumu şart; saatte 6, günde 20 not.
+    - Notlar `reader_notes` tablosunda durur. Yönetim › Notlar'da okunmamış rozetiyle görünür; sayfa açılınca okundu sayılır.
+  - **Baş harf:** `entries.initials` (≤12) ve `initials_style` (el | daktilo | gotik).
+    - Yazının sonunda sağ altta görünür.
+    - Fontlar @fontsource ile sitede barındırılıyor: Pinyon Script, Special Elite, UnifrakturMaguntia.
+    - Editörde alan ve yazı tipi seçimi var; yeni yazıda son kullanılan değer gelir.
 - **2ae1923:** Okuma ve kapak görselleri.
   - Bir yazı artık tek sayfada aşağı kaydırılarak okunuyor; yazılar arasında başlık/görsel geçiş sayfası var.
   - Yönetimde başlık (kapak) görseli yüklenebiliyor: Supabase Storage'da özel `covers` alanı, JPEG/PNG/WebP, en fazla 3 MB.

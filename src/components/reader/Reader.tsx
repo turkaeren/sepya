@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { buildSequence, sortEntries, type EntryLite, type PageData } from '@/lib/pagination';
 import { MONTHS, upTR, ymd } from '@/lib/format';
-import { Lock, Page } from './Page';
+import { Lock, Page, Pen } from './Page';
 import PostsPanel from './PostsPanel';
+import NoteSheet from './NoteSheet';
 import './reader.css';
 
 type Turn = { from: PageData; cls: string } | null;
@@ -26,6 +27,7 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
   const [idx, setIdx] = useState(0);
   const [turn, setTurn] = useState<Turn>(null);
   const [wheel, setWheel] = useState(false);
+  const [note, setNote] = useState(false);
   const [dawn, setDawn] = useState(true);
   const [dusk, setDusk] = useState(false);
   const flip = useRef(false);
@@ -70,14 +72,14 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
   const go = useCallback((d: number) => goTo(idx + d), [goTo, idx]);
 
   useEffect(() => {
-    if (wheel) return;
+    if (wheel || note) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); go(1); }
       if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(-1); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [go, wheel]);
+  }, [go, wheel, note]);
 
   function openWheel() {
     setWheel(true);
@@ -109,7 +111,7 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
             if (Math.abs(dx) > 46 && Math.abs(dx) > Math.abs(dy) * 1.3) { swipedAt.current = Date.now(); go(dx < 0 ? 1 : -1); }
           }}
         >
-          <Page key={page.key} pg={page} reader={name} grainId="g-cur" hasNext={idx < seq.pages.length - 1} onNext={() => go(1)} />
+          <Page key={page.key} pg={page} reader={name} grainId="g-cur" hasNext={idx < seq.pages.length - 1} onNext={() => go(1)} onNote={() => setNote(true)} />
           {turn && <div className={'under ' + turn.cls} aria-hidden="true" />}
           {turn && (
             <div className={'turn ' + turn.cls} aria-hidden="true">
@@ -130,13 +132,15 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
           </button>
         )}
 
-        <nav className={"topnav" + (wheel ? " hid" : "")} aria-label="Gezinme">
+        <nav className={"topnav" + (wheel || note ? " hid" : "")} aria-label="Gezinme">
           {n > 0 && (
             <button type="button" className="tnav tmenu" aria-haspopup="dialog" aria-expanded={wheel} onClick={openWheel}>
               <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h11M0 11h16" stroke="currentColor" strokeWidth="1.3" fill="none" /></svg>
               <span>Yazılar</span>
             </button>
           )}
+          <span className="tsep" aria-hidden="true" />
+          <button type="button" className="tnav nt" aria-label="Bana not bırak" onClick={() => setNote(true)}><Pen /></button>
           <span className="tsep" aria-hidden="true" />
           <button type="button" className="tnav lk" aria-label="Kilitle" onClick={lock}><Lock /></button>
         </nav>
@@ -150,6 +154,8 @@ export default function Reader({ entries, name }: { entries: EntryLite[]; name: 
           onChoose={(i) => { setWheel(false); goTo(seq.first[list[i].id] ?? 0); }}
         />
       )}
+
+      {note && <NoteSheet name={name} entry={k >= 0 ? { id: list[k].id, title: list[k].title } : null} onClose={() => setNote(false)} />}
 
       {dawn && <div className="night" aria-hidden="true" />}
       {dusk && <div className="dusk" aria-hidden="true" />}

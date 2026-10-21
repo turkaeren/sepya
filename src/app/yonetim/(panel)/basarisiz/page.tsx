@@ -25,7 +25,7 @@ export default async function Basarisiz({ searchParams }: { searchParams: Promis
     sb.from('pin_attempts').select('id', { count: 'exact', head: true }).eq('outcome', 'fail').gte('attempted_at', ago(7 * 86400000)),
     sb.from('pin_attempts').select('id', { count: 'exact', head: true }).eq('outcome', 'fail').gte('attempted_at', ago(30 * 86400000)),
     sb.from('ip_blocks').select('ip, until, reason').gt('until', new Date().toISOString()).order('until', { ascending: false }),
-    sb.from('pin_attempts').select('id, attempted_at, name, ip, country, city, device, os, browser, outcome', { count: 'exact' })
+    sb.from('pin_attempts').select('id, attempted_at, name, ip, country, city, device, os, browser, outcome, source', { count: 'exact' })
       .neq('outcome', 'ok').order('attempted_at', { ascending: false }).range(page * PER, page * PER + PER - 1),
     failAlert(),
     range === '24s' ? sb.rpc('admin_fail_hourly') : sb.rpc('admin_fail_daily', { p_days: range === '7g' ? 7 : 30 })
@@ -106,14 +106,14 @@ export default async function Basarisiz({ searchParams }: { searchParams: Promis
           <>
             <div className="tbw hs">
               <table className="tb">
-                <thead><tr><th>İsim</th><th>Tarih</th><th>Saat</th><th>IP</th><th>Ülke</th><th>Cihaz</th><th>Tarayıcı</th><th>Sonuç</th></tr></thead>
+                <thead><tr><th>İsim</th><th>Tarih</th><th>Saat</th><th>IP</th><th>Ülke</th><th>Cihaz</th><th>Tarayıcı</th><th>Kaynak</th><th>Sonuç</th></tr></thead>
                 <tbody>
                   {list.map((f) => (
                     <tr key={f.id}>
                       <td style={{ fontWeight: 500 }}>{f.name ?? <span className="mu">—</span>}</td>
                       <td className="mono">{dateDots(istDay(f.attempted_at))}</td><td className="mono">{hms(f.attempted_at)}</td>
                       <td className="mono">{f.ip ?? '—'}</td><td>{[f.country, f.city].filter(Boolean).join(' · ') || '—'}</td>
-                      <td>{f.device}</td><td>{f.browser}</td>
+                      <td>{f.device}</td><td>{f.browser}</td><td>{f.source ?? '—'}</td>
                       <td><span className={OUTCOME[f.outcome]?.[1] ?? 'pill'}>{OUTCOME[f.outcome]?.[0] ?? f.outcome}</span></td>
                     </tr>
                   ))}
@@ -124,7 +124,7 @@ export default async function Basarisiz({ searchParams }: { searchParams: Promis
               {list.map((f) => (
                 <div className="mc" key={f.id} style={{ cursor: 'default' }}>
                   <span className="r1"><b>{f.name ?? 'isimsiz'} <span className="mono mu" style={{ fontSize: 12, fontWeight: 400 }}>{dateDots(istDay(f.attempted_at))} {hms(f.attempted_at)}</span></b><span className={OUTCOME[f.outcome]?.[1] ?? 'pill'}>{OUTCOME[f.outcome]?.[0]}</span></span>
-                  <span className="r2">{f.country ?? 'Bilinmiyor'} · {f.device} / {f.browser}</span>
+                  <span className="r2">{f.country ?? 'Bilinmiyor'} · {f.device} / {f.browser}{f.source ? ' · ' + f.source : ''}</span>
                   <span className="r2 mono">{f.ip ?? '—'}</span>
                 </div>
               ))}

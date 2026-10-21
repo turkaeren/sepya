@@ -27,6 +27,8 @@ export default async function Ziyaretciler({ searchParams }: { searchParams: Pro
     sb.from('v_sessions').select('id', { count: 'exact', head: true }).eq('status', 'active').not('name', 'is', null)
   ]);
   const list = rows ?? [];
+  const { data: srcRows } = list.length ? await sb.from('reader_sessions').select('id, source').in('id', list.map((r) => r.id)) : { data: [] };
+  const srcOf = new Map((srcRows ?? []).map((r) => [r.id as string, (r.source as string | null) ?? '—']));
   const href = (k: string) => `/yonetim/ziyaretciler?durum=${k}${q ? '&q=' + encodeURIComponent(q) : ''}`;
   const dur = (a: string, b: string) => fmtMinutes(new Date(b).getTime() - new Date(a).getTime());
 
@@ -53,7 +55,7 @@ export default async function Ziyaretciler({ searchParams }: { searchParams: Pro
           <>
             <div className="tbw hs">
               <table className="tb">
-                <thead><tr><th>İsim</th><th>İlk giriş</th><th>Son görülme</th><th>Oturum</th><th className="r">Sayfa</th><th>Cihaz</th><th>Konum</th><th>Durum</th></tr></thead>
+                <thead><tr><th>İsim</th><th>İlk giriş</th><th>Son görülme</th><th>Oturum</th><th className="r">Sayfa</th><th>Kaynak</th><th>Cihaz</th><th>Konum</th><th>Durum</th></tr></thead>
                 <tbody>
                   {list.map((v) => (
                     <tr key={v.id}>
@@ -62,6 +64,7 @@ export default async function Ziyaretciler({ searchParams }: { searchParams: Pro
                       <td className="mono">{hm(v.last_seen_at)}</td>
                       <td className="mono">{dur(v.created_at, v.last_seen_at)}</td>
                       <td className="r mono">{v.pages}</td>
+                      <td>{srcOf.get(v.id) ?? '—'}</td>
                       <td>{v.device} / {v.browser}</td>
                       <td>{[v.country, v.city].filter(Boolean).join(' · ') || '—'}</td>
                       <td><Status s={v.status} /></td>
@@ -75,7 +78,7 @@ export default async function Ziyaretciler({ searchParams }: { searchParams: Pro
                 <Link key={v.id} className="mc" href={`/yonetim/ziyaretciler/${v.id}`} style={{ textDecoration: 'none' }}>
                   <span className="r1"><b>{v.name}</b><Status s={v.status} /></span>
                   <span className="r2">{shortDT(v.created_at)} → {hm(v.last_seen_at)} · {dur(v.created_at, v.last_seen_at)} · {v.pages} sayfa</span>
-                  <span className="r2">{v.device} / {v.browser} · {[v.country, v.city].filter(Boolean).join(' · ') || '—'}</span>
+                  <span className="r2">{srcOf.get(v.id) && srcOf.get(v.id) !== '—' ? srcOf.get(v.id) + ' · ' : ''}{v.device} / {v.browser} · {[v.country, v.city].filter(Boolean).join(' · ') || '—'}</span>
                 </Link>
               ))}
             </div>

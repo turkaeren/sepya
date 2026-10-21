@@ -57,3 +57,24 @@ export function istMidnightIso(daysAgo = 0) {
   const d = istDay(new Date(Date.now() - daysAgo * 86400000));
   return new Date(`${d}T00:00:00+03:00`).toISOString();
 }
+
+/** Okurların nereden geldiği: oturum ve başarısız deneme sayısı, kaynağa göre. */
+export async function getSources(days: number) {
+  const since = istMidnightIso(days - 1);
+  const sb = db();
+  const [{ data: ses }, { data: att }] = await Promise.all([
+    sb.from('reader_sessions').select('source').not('name', 'is', null).gte('created_at', since).limit(10000),
+    sb.from('pin_attempts').select('source').eq('outcome', 'fail').not('source', 'is', null).gte('attempted_at', since).limit(10000)
+  ]);
+  const group = (rows: { source: string | null }[] | null) => {
+    const m = new Map<string, number>();
+    for (const r of rows ?? []) if (r.source) m.set(r.source, (m.get(r.source) ?? 0) + 1);
+    return [...m.entries()].map(([k, n]) => ({ k, n })).sort((a, b) => b.n - a.n).slice(0, 12);
+  };
+  return {
+    sessions: group(ses),
+    attempts: group(att),
+    total: (ses ?? []).length,
+    unknown: (ses ?? []).filter((r) => !r.source).length
+  };
+}

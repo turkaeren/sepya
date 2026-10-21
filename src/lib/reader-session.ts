@@ -39,7 +39,7 @@ export async function touchSession(id: string) {
   await db().from('reader_sessions').update({ last_seen_at: new Date().toISOString() }).eq('id', id);
 }
 
-export async function createReaderSession(info: ClientInfo, name: string | null = null) {
+export async function createReaderSession(info: ClientInfo, name: string | null = null, src: { source: string; ref: string | null } | null = null) {
   const jar = await cookies();
   const token = randomToken();
   const existingVisitor = jar.get(VISITOR_COOKIE)?.value;
@@ -58,6 +58,8 @@ export async function createReaderSession(info: ClientInfo, name: string | null 
     browser: info.browser,
     user_agent: info.userAgent,
     referer: info.referer,
+    source: src?.source ?? null,
+    source_ref: src?.ref ?? null,
     expires_at: expires.toISOString()
   });
   if (error) throw new Error(error.message);

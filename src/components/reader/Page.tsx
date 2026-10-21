@@ -1,3 +1,6 @@
+import '@fontsource/pinyon-script/index.css';
+import '@fontsource/special-elite/index.css';
+import '@fontsource/unifrakturmaguntia/index.css';
 import { CATS, type PageData } from '@/lib/pagination';
 
 export function Grain({ id }: { id: string }) {
@@ -13,7 +16,7 @@ export function Grain({ id }: { id: string }) {
 }
 
 /** Tek bir tam ekran sayfa. Okur tarafında ve yönetim önizlemesinde aynen kullanılır. */
-export function Page({ pg, reader, grainId = 'g', onNext, hasNext }: { pg: PageData; reader?: string; grainId?: string; onNext?: () => void; hasNext?: boolean }) {
+export function Page({ pg, reader, grainId = 'g', onNext, hasNext, onNote }: { pg: PageData; reader?: string; grainId?: string; onNext?: () => void; hasNext?: boolean; onNote?: () => void }) {
   return (
     <div className="page">
       <div className="gutter" aria-hidden="true" />
@@ -79,6 +82,7 @@ export function Page({ pg, reader, grainId = 'g', onNext, hasNext }: { pg: PageD
                   {pg.paras.map((p, i) => <p key={i} className={p.cont ? 'cont' : undefined}>{p.t}</p>)}
                 </div>
               )}
+              {pg.initials && <p className={'inits i-' + (pg.initialsStyle ?? 'el')} aria-label={`İmza: ${pg.initials}`}>{pg.initials}</p>}
               <div className="rend">
                 <span className="rule" aria-hidden="true" />
                 {hasNext && onNext ? (
@@ -86,6 +90,7 @@ export function Page({ pg, reader, grainId = 'g', onNext, hasNext }: { pg: PageD
                 ) : (
                   <span className="rdone">Şimdilik hepsi bu.</span>
                 )}
+                {onNote && <button type="button" className="rnote" onClick={onNote}><Pen /> bir not bırak</button>}
               </div>
             </article>
           )}
@@ -133,4 +138,7 @@ export const Close = () => (
 );
 export const ArrowL = () => (
   <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden="true"><path d="M22 5H2M6 1L2 5l4 4" /></svg>
+);
+export const Pen = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M11.2 2.3l2.5 2.5L5.5 13H3v-2.5z" /><path d="M9.6 3.9l2.5 2.5" /><path d="M2.5 15h11" /></svg>
 );

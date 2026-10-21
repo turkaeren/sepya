@@ -28,6 +28,17 @@ export default function Gate({ suggestedName, hasSession = false }: { suggestedN
   const [now, setNow] = useState(() => Date.now());
   const inputRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
+  // Nereden gelindi: ilk açılıştaki yönlendiren sayfa ve bağlantı etiketleri
+  const origin = useRef({ ref: '', qs: '' });
+  useEffect(() => {
+    let o = { ref: document.referrer || '', qs: window.location.search || '' };
+    try {
+      const saved = sessionStorage.getItem('sepya_src');
+      if (saved && !o.ref && !o.qs) o = JSON.parse(saved);
+      else sessionStorage.setItem('sepya_src', JSON.stringify(o));
+    } catch { /* depolama kapalı olabilir */ }
+    origin.current = o;
+  }, []);
 
   const locked = lockUntil > now;
   const lockSec = Math.max(1, Math.ceil((lockUntil - now) / 1000));
@@ -79,7 +90,7 @@ export default function Gate({ suggestedName, hasSession = false }: { suggestedN
       const res = await fetch('/api/pin', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ pin: value, name: cleanName }),
+        body: JSON.stringify({ pin: value, name: cleanName, ref: origin.current.ref, qs: origin.current.qs }),
         credentials: 'same-origin'
       });
       const data = await res.json().catch(() => ({}));

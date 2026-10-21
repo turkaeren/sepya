@@ -37,16 +37,18 @@ export async function pinInfo() {
   return data ? { updatedAt: data.updated_at as string } : null;
 }
 
+let curSource: string | null = null;
 async function record(info: ClientInfo, success: boolean, outcome: 'ok' | 'fail' | 'wait' | 'blocked', name: string | null) {
   await db().from('pin_attempts').insert({
-    name, ip: info.ip, country: info.country, city: info.city, device: info.device, os: info.os,
+    name, source: curSource, ip: info.ip, country: info.country, city: info.city, device: info.device, os: info.os,
     browser: info.browser, user_agent: info.userAgent, success, outcome
   });
 }
 
 const secondsUntil = (t: number) => Math.max(1, Math.ceil((t - Date.now()) / 1000));
 
-export async function attemptPin(pin: string, info: ClientInfo, name: string | null = null): Promise<PinResult> {
+export async function attemptPin(pin: string, info: ClientInfo, name: string | null = null, source: string | null = null): Promise<PinResult> {
+  curSource = source;
   const now = Date.now();
   const sb = db();
 

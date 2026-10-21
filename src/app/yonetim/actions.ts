@@ -69,6 +69,8 @@ export async function saveEntryAction(_: FormState, f: FormData): Promise<FormSt
   const content = str(f, 'content').replace(/\r/g, '');
   const sort_order = Number.parseInt(str(f, 'sort_order') || '0', 10) || 0;
   const removeCover = str(f, 'cover_remove') === '1';
+  const initials = str(f, 'initials').replace(/\s+/g, ' ').trim();
+  const initials_style = str(f, 'initials_style') || 'el';
   const rawCover = f.get('cover');
   const cover = rawCover instanceof File && rawCover.size > 0 ? rawCover : null;
 
@@ -76,12 +78,14 @@ export async function saveEntryAction(_: FormState, f: FormData): Promise<FormSt
   if (!['siir', 'not', 'defter'].includes(category)) return { error: 'Kategori seç.' };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(entry_date)) return { error: 'Tarih geçersiz.' };
   if (content.length > 50000) return { error: 'Metin çok uzun.' };
+  if (initials.length > 12) return { error: 'Baş harf en fazla 12 karakter olabilir.' };
+  if (!['el', 'daktilo', 'gotik'].includes(initials_style)) return { error: 'Baş harf yazı tipi geçersiz.' };
   if (intent !== 'publish' && intent !== 'draft') return { error: 'Önce “Taslak” ya da “Yayınla” düğmesine bas.' };
   if (cover && !COVER_TYPES[cover.type]) return { error: 'Görsel JPEG, PNG ya da WebP olmalı.' };
   if (cover && cover.size > COVER_MAX) return { error: 'Görsel 3 MB’tan büyük olamaz.' };
   if (id && !UUID.test(id)) return { error: 'Geçersiz içerik.' };
 
-  const row: Record<string, unknown> = { title, category, entry_date, content, sort_order, published: intent === 'publish' };
+  const row: Record<string, unknown> = { title, category, entry_date, content, sort_order, published: intent === 'publish', initials: initials || null, initials_style };
 
   let savedId = id;
   let oldCover: string | null = null;
@@ -232,4 +236,14 @@ export async function importAction(_: ImportState, f: FormData): Promise<ImportS
   revalidatePath('/');
   const siir = posts.filter((p) => p.category === 'siir').length;
   return { ok: `${posts.length} yazı aktarıldı.`, count: posts.length, siir, not: posts.length - siir, deleted };
+}
+
+// —— Okur notları ——————————————————————————————————————————————————
+
+export async function deleteNoteAction(f: FormData) {
+  await requireAdmin();
+  const id = str(f, 'id');
+  if (!UUID.test(id)) return;
+  await db().from('reader_notes').delete().eq('id', id);
+  revalidatePath('/yonetim/notlar');
 }

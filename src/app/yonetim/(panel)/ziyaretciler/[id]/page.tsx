@@ -16,6 +16,7 @@ export default async function Ziyaretci({ params }: { params: Promise<{ id: stri
   const sb = db();
   const { data: s } = await sb.from('v_sessions').select('*').eq('id', id).maybeSingle();
   if (!s) notFound();
+  const { data: srcRow } = await sb.from('reader_sessions').select('source, source_ref').eq('id', id).maybeSingle();
 
   const [{ data: views }, { data: others }] = await Promise.all([
     sb.from('page_views').select('id, kind, label, part, category, entry_id, viewed_at, duration_ms').eq('session_id', id).order('viewed_at', { ascending: true }).limit(500),
@@ -86,7 +87,7 @@ export default async function Ziyaretci({ params }: { params: Promise<{ id: stri
               <dt>Tarayıcı</dt><dd>{s.browser}</dd>
               <dt>Konum</dt><dd>{[s.country, s.city].filter(Boolean).join(' · ') || '—'} (yaklaşık)</dd>
               <dt>IP</dt><dd className="mono">{s.ip ?? '—'}</dd>
-              <dt>Referer</dt><dd>{s.referer ?? 'Doğrudan'}</dd>
+              <dt>Nereden geldi</dt><dd>{srcRow?.source ?? 'Bilinmiyor'}{srcRow?.source_ref && srcRow.source_ref !== srcRow.source ? ` · ${srcRow.source_ref}` : ''}</dd>
               <dt>Oturum kimliği</dt><dd className="mono">{s.id.slice(0, 8)}…{s.id.slice(-4)}</dd>
               <dt>Başlangıç</dt><dd className="mono">{dotsDT(s.created_at)}</dd>
               <dt>Son hareket</dt><dd className="mono">{dotsDT(s.last_seen_at)}</dd>
