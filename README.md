@@ -2,7 +2,7 @@
 
 Kişisel şiir, not ve defter yayını. Okur PIN'le girer, adını yazar ve sayfaları kaydırarak okur. Arkada veri odaklı bir yönetim paneli vardır.
 
-- **Okur tarafı:** `/` — PIN → isim → tam ekran okuma, menü, arşiv
+- **Okur tarafı:** `/` — isim → şifre (PIN) → tam ekran okuma. Sağ üstte gezinme çubuğu (≡ Yazılar + kilit), sağ kenarda zaman çizgisi; yazılar yeniden eskiye.
 - **Yönetim:** `/yonetim` — genel bakış, analitik, ziyaretçiler, başarısız denemeler, içerikler (canlı telefon önizlemeli editör), güvenlik
 - **İlk kurulum:** `/yonetim/kurulum` — yalnızca hiç yönetici yokken açılır
 
@@ -42,7 +42,6 @@ Tarayıcı veritabanına hiç bağlanmaz. Tüm tablolarda RLS açık ve politika
 4. `https://<alan-adın>/yonetim/kurulum` adresini aç:
    - `SETUP_TOKEN`'ı gir
    - yönetici e-postası ve parolasını belirle
-   - QR kodu bir doğrulama uygulamasıyla tara, 6 haneli kodu yaz
    - okurların gireceği 4 haneli PIN'i belirle
 5. Kurulum bitince sayfa kendiliğinden kapanır. İstersen `SETUP_TOKEN`'ı Vercel'den silebilirsin.
 
@@ -71,3 +70,18 @@ npm run dev                  # http://localhost:3000
 - **Şiir:** her satır bir dize, boş satır kıta arası. Tek satırlık kıtalar (ör. `II.`) sonraki kıtayla aynı sayfada kalır.
 - **Not / Defter:** boş satır paragraf arası.
 - Uzun metinler sayfalara otomatik bölünür (`src/lib/pagination.ts`). Yönetimdeki önizleme de okur tarafıyla aynı kuralı kullanır.
+
+## Son güncellemeler
+
+- **9e6d445:** Okur ekranında sağ üstte tıklanabilir gezinme çubuğu: "≡ Yazılar" listeyi açar, yanında kilit var. Liste açıkken çubuk gizlenir. Sınıflar `.topnav` ve `.tnav` (eski `.menu` ile çakışmasın diye `.tmenu`).
+- **83010c3:** Yönetim → İçerikler → **WordPress’ten al** (`src/lib/wp-import.ts`, `importAction`).
+  - Kaynak WordPress.com herkese açık API'si ya da WordPress dışa aktarma .xml dosyası.
+  - Başlık, tarih ve metin gelir; görseller atılır.
+  - Şiir ya da düzyazı olduğu kendiliğinden ayrılır.
+  - "Önce mevcut içeriği sil" seçeneği var; silme yalnızca aktarma alınabildiyse yapılır.
+  - Server action gövde sınırı 20 MB.
+- **f81e758:** Yönetici girişi yalnızca e-posta + parola; TOTP kaldırıldı. Hesap bazlı kilit: saatte 10 hata → 1 sa.
+- **Önce isim sonra şifre:**
+  - Başarısız denemeler isimle loglanır (`pin_attempts.name`, migration 0004).
+  - Saçma isimler `src/lib/name.ts` → `checkName()` ile reddedilir.
+- **Sağ panel:** Yazılar aya göre gruplu, yeniden eskiye (PostsPanel).
