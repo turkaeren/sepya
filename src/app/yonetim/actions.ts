@@ -71,10 +71,9 @@ export async function saveEntryAction(_: FormState, f: FormData): Promise<FormSt
   if (!/^\d{4}-\d{2}-\d{2}$/.test(entry_date)) return { error: 'Tarih geçersiz.' };
   if (content.length > 50000) return { error: 'Metin çok uzun.' };
 
-  const row: Record<string, unknown> = { title, category, entry_date, content, sort_order };
-  if (intent === 'publish') row.published = true;
-  if (intent === 'draft') row.published = false;
-  if (intent === 'save') row.published = str(f, 'published') === 'true';
+  if (intent !== 'publish' && intent !== 'draft') return { error: 'Önce “Taslak” ya da “Yayınla” düğmesine bas.' };
+
+  const row: Record<string, unknown> = { title, category, entry_date, content, sort_order, published: intent === 'publish' };
 
   let savedId = id;
   if (id) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useMemo, useState } from 'react';
+import { useActionState, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { entryPages, type Category } from '@/lib/pagination';
 import { Page } from '@/components/reader/Page';
@@ -34,6 +34,8 @@ function Phone({ w, h, scale, children }: { w: number; h: number; scale: number;
 export default function EntryEditor({ initial, heading, sub, children }: { initial: EditorEntry; heading: string; sub: string; children?: React.ReactNode }) {
   const [state, action, pending] = useActionState<FormState, FormData>(saveEntryAction, undefined);
   const [e, setE] = useState<EditorEntry>(initial);
+  const intentRef = useRef<HTMLInputElement>(null);
+  const choose = (v: 'publish' | 'draft') => { if (intentRef.current) intentRef.current.value = v; };
   const [pi, setPi] = useState(0);
   const [full, setFull] = useState(false);
   const [dev, setDev] = useState(1);
@@ -59,7 +61,7 @@ export default function EntryEditor({ initial, heading, sub, children }: { initi
     <form action={action}>
       <input type="hidden" name="id" value={e.id ?? ''} />
       <input type="hidden" name="category" value={e.category} />
-      <input type="hidden" name="published" value={String(e.published)} />
+      <input type="hidden" name="intent" ref={intentRef} defaultValue="" />
       {/* Önizleme modunda da değerlerin gönderilmesi için */}
       {full && <>
         <input type="hidden" name="title" value={e.title} />
@@ -74,9 +76,8 @@ export default function EntryEditor({ initial, heading, sub, children }: { initi
         <div className="acts">
           {full ? nav : null}
           <button type="button" className="btn" onClick={() => setFull(!full)}>{full ? 'Düzenlemeye dön' : 'Önizle'}</button>
-          {!full && <button type="submit" name="intent" value="draft" className="btn" disabled={pending}>Taslak olarak kaydet</button>}
-          {!full && e.id && <button type="submit" name="intent" value="save" className="btn" disabled={pending}>Kaydet</button>}
-          <button type="submit" name="intent" value="publish" className="btn pri" disabled={pending}>{pending ? 'Kaydediliyor…' : e.published && e.id ? 'Yayında güncelle' : 'Yayınla'}</button>
+          <button type="submit" className="btn" onClick={() => choose('draft')} disabled={pending}>Taslak</button>
+          <button type="submit" className="btn pri" onClick={() => choose('publish')} disabled={pending}>{pending ? 'Kaydediliyor…' : 'Yayınla'}</button>
         </div>
       </div>
       {state?.error && <div className="alertbar" role="alert">{state.error}</div>}
@@ -116,13 +117,6 @@ export default function EntryEditor({ initial, heading, sub, children }: { initi
               </span>
             </div>
             <div className="row2">
-              <div className="fld"><span className="lab" id="st-l">Yayın durumu</span>
-                <div className="tabs" role="group" aria-labelledby="st-l" style={{ alignSelf: 'flex-start' }}>
-                  <button type="button" className={'tab' + (!e.published ? ' on' : '')} aria-pressed={!e.published} onClick={() => set({ published: false })}>Taslak</button>
-                  <button type="button" className={'tab' + (e.published ? ' on' : '')} aria-pressed={e.published} onClick={() => set({ published: true })}>Yayında</button>
-                </div>
-                <span className="hint">“Kaydet” bu seçimi uygular; “Yayınla” ve “Taslak” doğrudan belirler.</span>
-              </div>
               <div className="fld"><label className="lab" htmlFor="sort_order">Aynı gün içindeki sıra</label>
                 <input id="sort_order" name="sort_order" className="inp mono" type="number" min={-999} max={999} value={e.sort_order} onChange={(x) => set({ sort_order: Number(x.target.value) || 0 })} style={{ maxWidth: 120 }} />
                 <span className="hint">Küçük sayı önce gelir. Genelde 0 kalır.</span>
