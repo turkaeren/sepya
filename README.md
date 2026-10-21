@@ -73,6 +73,11 @@ npm run dev                  # http://localhost:3000
 
 ## Son güncellemeler
 
+- **İstatistik sıfırlama:** Analitik sayfasının en altında. Ziyaret/okuma kayıtları (biten oturumlar ve sayfa görüntülemeleri) ve giriş denemeleri (pin_attempts, ip_blocks) ayrı ayrı seçilebiliyor. Onay için “sıfırla” yazılması gerekiyor.
+- **WordPress içe aktarma kaldırıldı** (sayfa, `wp-import.ts`, `importAction`).
+- **Kaynak düzeltmesi:**
+  - Android'de uygulamadan açılan bağlantılar `android-app://paket` referrer'ıyla tanınıyor (WhatsApp, Instagram, Telegram, Gmail…).
+  - Oturumu zaten açık okur bir bağlantıyla geri gelirse Reader `/api/source` ile kaynağı güncelliyor ve adres çubuğundaki `?kaynak=` temizleniyor.
 - **Kapak yazıları:** Yönetim › Kapak'tan düzenleniyor. Değerler `settings` tablosunda, `cover_text` anahtarında JSON olarak duruyor (`src/lib/cover.ts`, `cover-store.ts`). Boş satır gösterilmez, `{isim}` okurun adıyla değişir.
 - **Kaynak, notlar, baş harf** (migration `0005_source_notes_initials.sql`, uygulandı):
   - **Nereden geldi:** `src/lib/source.ts` → `detectSource()`.

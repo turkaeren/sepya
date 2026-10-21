@@ -196,48 +196,6 @@ export async function changePinAction(_: FormState, f: FormData): Promise<FormSt
   return { ok: 'PIN değişti. Açık okur oturumları kapatıldı.' };
 }
 
-// —— WordPress içe aktarma ——————————————————————————————————————————
-
-export type ImportState = { error?: string; ok?: string; count?: number; siir?: number; not?: number; deleted?: number } | undefined;
-
-export async function importAction(_: ImportState, f: FormData): Promise<ImportState> {
-  await requireAdmin();
-  const { fetchFromWordPressCom, parseWxr, ImportError } = await import('@/lib/wp-import');
-  let posts;
-  try {
-    if (str(f, 'mode') === 'file') {
-      const file = f.get('file');
-      if (!(file instanceof File) || file.size === 0) return { error: 'Bir .xml dosyası seç.' };
-      if (file.size > 20 * 1024 * 1024) return { error: 'Dosya 20 MB’tan büyük.' };
-      posts = parseWxr(await file.text());
-    } else {
-      posts = await fetchFromWordPressCom(str(f, 'site'));
-    }
-  } catch (e) {
-    return { error: e instanceof ImportError ? e.message : 'WordPress’e ulaşılamadı. Dışa aktarma dosyasıyla dene.' };
-  }
-  if (!posts.length) return { error: 'Hiç yayımlanmış yazı bulunamadı.' };
-
-  const sb = db();
-  let deleted = 0;
-  if (str(f, 'replace') === '1') {
-    const { count, error } = await sb.from('entries').delete({ count: 'exact' }).not('id', 'is', null);
-    if (error) return { error: 'Eski içerikler silinemedi: ' + error.message };
-    deleted = count ?? 0;
-  }
-  const rows = posts.map((p) => ({
-    title: p.title, content: p.content.slice(0, 50000), category: p.category, entry_date: p.entry_date, published: true, sort_order: 0
-  }));
-  for (let i = 0; i < rows.length; i += 200) {
-    const { error } = await sb.from('entries').insert(rows.slice(i, i + 200));
-    if (error) return { error: `Aktarma ${i}. yazıda durdu: ${error.message}` };
-  }
-  revalidatePath('/yonetim/icerikler');
-  revalidatePath('/');
-  const siir = posts.filter((p) => p.category === 'siir').length;
-  return { ok: `${posts.length} yazı aktarıldı.`, count: posts.length, siir, not: posts.length - siir, deleted };
-}
-
 // —— Okur notları ——————————————————————————————————————————————————
 
 export async function deleteNoteAction(f: FormData) {
@@ -265,4 +223,31 @@ export async function saveCoverAction(_: FormState, f: FormData): Promise<FormSt
   revalidatePath('/');
   revalidatePath('/yonetim/kapak');
   return { ok: 'Kapak kaydedildi. Okurlar bir sonraki açılışta yenisini görür.' };
+}
+
+// —— İstatistikleri sıfırla ————————————————————————————————————————
+
+export async function resetStatsAction(_: FormState, f: FormData): Promise<FormState> {
+  await requireAdmin();
+  if (str(f, 'confirm').trim().toLocaleLowerCase('tr-TR') !== 'sıfırla') return { error: 'Onay için kutuya “sıfırla” yaz.' };
+  const views = str(f, 'views') === '1';
+  const fails = str(f, 'fails') === '1';
+  if (!views && !fails) return { error: 'Sıfırlanacak bir şey seç.' };
+  const sb = db();
+  if (views) {
+    // Okuma kayıtları ve biten oturumlar silinir; şu an içeride olan okurlar atılmaz.
+    const r1 = await sb.from('page_views').delete().gte('id', 0);
+    if (r1.error) return { error: r1.error.message };
+    const now = Date.now();
+    const r2 = await sb.from('reader_sessions').delete()
+      .or(`ended_at.not.is.null,expires_at.lt."${new Date(now).toISOString()}",last_seen_at.lt."${new Date(now - 30 * 60000).toISOString()}"`);
+    if (r2.error) return { error: r2.error.message };
+  }
+  if (fails) {
+    const r3 = await sb.from('pin_attempts').delete().gte('id', 0);
+    if (r3.error) return { error: r3.error.message };
+    await sb.from('ip_blocks').delete().gte('until', '1970-01-01');
+  }
+  revalidatePath('/yonetim', 'layout');
+  return { ok: 'İstatistikler sıfırlandı.' };
 }

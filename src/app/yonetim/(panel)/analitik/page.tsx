@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { dayTick, getAnalytics, getSources } from '@/lib/admin-data';
 import { fmtDuration, nf } from '@/lib/format';
 import { Bars, HBars, Line, PairBars, StackBars } from '@/components/admin/Charts';
+import ResetStats from '@/components/admin/ResetStats';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,6 +82,7 @@ export default async function Analitik({ searchParams }: { searchParams: Promise
           <HBars data={a.browsers} unit="%" />
         </section>
       </div>
+      <ResetStats />
     </div>
   );
 }

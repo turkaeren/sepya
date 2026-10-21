@@ -200,3 +200,15 @@
 .ad .note .nent{font-family:inherit;font-style:italic}
 .ad .note .nbody{margin:14px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font-family:'EB Garamond',Georgia,serif;font-size:18px;line-height:1.55;color:#1B1A17}
 .ad .badge.ink{background:#1B1A17;color:#F4EFE6}
+
+/* —— İstatistik sıfırlama —— */
+.ad .btn.danger{background:#7B2431;border-color:#7B2431;color:#FBFAF7}
+.ad .btn.danger:hover{background:#621B27}
+.ad .reset{margin-top:22px;padding:0}
+.ad .reset summary{padding:16px 20px;cursor:pointer;font-weight:500;color:#7B2431;list-style:none}
+.ad .reset summary::-webkit-details-marker{display:none}
+.ad .reset summary::before{content:'›';display:inline-block;margin-right:10px;transition:transform .2s}
+.ad .reset[open] summary::before{transform:rotate(90deg)}
+.ad .reset .rbody{padding:0 20px 20px}
+.ad .reset .chk{display:flex;gap:10px;align-items:flex-start;margin:0 0 10px;font-size:14px;line-height:1.5}
+.ad .reset .chk input{margin-top:4px}

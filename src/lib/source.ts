@@ -36,13 +36,32 @@ const UTM: Record<string, string> = {
   wordpress: 'WordPress', email: 'E-posta', mail: 'E-posta'
 };
 
+// Android'de uygulamadan açılan bağlantılar referrer olarak "android-app://paket.adı/" gelir.
+const APPS: [RegExp, string][] = [
+  [/^com\.instagram\.barcelona/, 'Threads'],
+  [/^com\.instagram\./, 'Instagram'],
+  [/^com\.facebook\.(katana|lite|orca|mlite)/, 'Facebook'],
+  [/^com\.whatsapp/, 'WhatsApp'],
+  [/^(org\.telegram\.|org\.thunderdog\.challegram)/, 'Telegram'],
+  [/^com\.twitter\.android/, 'X'],
+  [/^(com\.zhiliaoapp\.musically|com\.ss\.android\.ugc)/, 'TikTok'],
+  [/^com\.google\.android\.gm$/, 'E-posta'],
+  [/^com\.google\.android\.(googlequicksearchbox|apps\.searchlite)/, 'Google'],
+  [/^com\.google\.android\.youtube/, 'YouTube'],
+  [/^com\.linkedin\./, 'LinkedIn'],
+  [/^com\.snapchat\./, 'Snapchat'],
+  [/^com\.discord/, 'Discord'],
+  [/^(com\.google\.android\.apps\.messaging|com\.samsung\.android\.messaging)/, 'SMS']
+];
+
 function hostOf(url: string): string | null {
   try { return new URL(url).hostname.toLowerCase().replace(/^www\./, ''); } catch { return null; }
 }
 
 export function detectSource(ref: string, search: string, ua: string, selfHost: string | null): { source: string; ref: string | null } {
   const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
-  const host = ref ? hostOf(ref) : null;
+  const app = ref.match(/^android-app:\/\/([a-z0-9_.]+)/i)?.[1]?.toLowerCase() ?? null;
+  const host = ref && !app ? hostOf(ref) : null;
   const external = host && (!selfHost || (host !== selfHost.replace(/^www\./, '') && !host.endsWith('.vercel.app'))) ? host : null;
   const refOut = external; // yalnızca alan adı saklanır
 
@@ -66,7 +85,11 @@ export function detectSource(ref: string, search: string, ua: string, selfHost: 
   if (/WhatsApp/i.test(ua)) return { source: 'WhatsApp', ref: refOut };
   if (/Snapchat/i.test(ua)) return { source: 'Snapchat', ref: refOut };
 
-  // 3) yönlendiren sayfa
+  // 3) yönlendiren uygulama (Android) ya da sayfa
+  if (app) {
+    for (const [re, name] of APPS) if (re.test(app)) return { source: name, ref: app.slice(0, 80) };
+    if (!/^com\.(android\.chrome|chrome\.|sec\.android\.app\.sbrowser|opera|brave|microsoft\.emmx)|^org\.mozilla/.test(app)) return { source: app.split('.').slice(-1)[0].slice(0, 30), ref: app.slice(0, 80) };
+  }
   if (external) {
     for (const [re, name] of HOSTS) if (re.test(external)) return { source: name, ref: refOut };
   }

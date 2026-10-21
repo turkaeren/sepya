@@ -43,6 +43,18 @@ export default function Reader({ entries, name, cover }: { entries: EntryLite[];
   const k = page.entryId ? list.findIndex((e) => e.id === page.entryId) : -1;
 
   useEffect(() => { const t = setTimeout(() => setDawn(false), 1900); return () => clearTimeout(t); }, []);
+
+  // Oturum açıkken bir bağlantıyla gelindiyse (Instagram, ?kaynak=…) kaynağı bildir; adresi temizle.
+  useEffect(() => {
+    const ref = document.referrer || '';
+    const qs = window.location.search || '';
+    let sameSite = false;
+    try { sameSite = !!ref && new URL(ref).host === window.location.host; } catch { /* android-app:// vb. */ }
+    if ((ref && !sameSite) || qs) {
+      fetch('/api/source', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ref: sameSite ? '' : ref, qs }), credentials: 'same-origin' }).catch(() => {});
+    }
+    if (qs) window.history.replaceState(null, '', window.location.pathname);
+  }, []);
   const [labelOn, setLabelOn] = useState(false);
   useEffect(() => {
     if (k < 0) return;
