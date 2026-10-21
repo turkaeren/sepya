@@ -74,7 +74,7 @@ export async function saveEntryAction(_: FormState, f: FormData): Promise<FormSt
   const row: Record<string, unknown> = { title, category, entry_date, content, sort_order };
   if (intent === 'publish') row.published = true;
   if (intent === 'draft') row.published = false;
-  if (intent === 'save' && !id) row.published = str(f, 'published') === 'true';
+  if (intent === 'save') row.published = str(f, 'published') === 'true';
 
   let savedId = id;
   if (id) {
