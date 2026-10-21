@@ -4,6 +4,7 @@ import { dayTick, failAlert, getAnalytics, istMidnightIso } from '@/lib/admin-da
 import { hm, nf, shortDT } from '@/lib/format';
 import { AlertIcon, Bars, Empty, HBars, Kpi, Status } from '@/components/admin/Charts';
 import { revokeSessionAction } from '../actions';
+import { InstallApp } from '@/components/admin/AppShell';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +43,7 @@ export default async function Dashboard() {
         <div><h1>Genel</h1><p className="sub">{now} · {hm(new Date())} itibarıyla</p></div>
         <div className="acts"><Link className="btn" href="/yonetim/analitik">Analitik</Link><Link className="btn pri" href="/yonetim/icerikler/yeni">+ Yeni İçerik</Link></div>
       </div>
+      <div className="mobonly" style={{ flexDirection: 'column' }}><InstallApp /></div>
 
       {alert && (
         <div className="alertbar" role="alert">

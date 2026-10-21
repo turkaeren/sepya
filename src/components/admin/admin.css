@@ -212,3 +212,38 @@
 .ad .reset .rbody{padding:0 20px 20px}
 .ad .reset .chk{display:flex;gap:10px;align-items:flex-start;margin:0 0 10px;font-size:14px;line-height:1.5}
 .ad .reset .chk input{margin-top:4px}
+
+/* —— Uygulama (mobil) —— */
+.ad .mtabs{display:none}
+.ad .install{display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:14px 16px}
+.ad .install img{border-radius:12px;flex:none}
+.ad .install p{margin:4px 0 0;color:var(--mu);font-size:13px;line-height:1.45}
+.ad .install .btn{margin-left:auto;flex:none}
+.ad .menu{display:flex;flex-direction:column}
+.ad .mrow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px;padding:12px 18px;border-bottom:1px solid var(--ln);color:var(--ink);text-decoration:none}
+.ad .mrow:last-child{border-bottom:0}
+.ad .mrow span:first-child{display:flex;flex-direction:column;gap:2px}
+.ad .mrow small{color:var(--mu);font-size:12px}
+.ad .mrow .chev{font-size:20px;color:var(--mu)}
+.ad .mrow .badge{margin-left:0}
+.ad .btn.full{width:100%;justify-content:center}
+
+@container (max-width: 900px){
+  .ad .side{position:sticky;top:0;z-index:20;padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;background:rgba(251,250,247,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .ad .side .nav{display:none}
+  .ad .main{padding-bottom:calc(env(safe-area-inset-bottom) + 92px)}
+  .ad .mtabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:6px 4px calc(env(safe-area-inset-bottom) + 6px);background:rgba(251,250,247,.94);border-top:1px solid var(--ln);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+  .ad .mt{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:52px;padding:4px 0;color:#8A8377;text-decoration:none;-webkit-tap-highlight-color:transparent}
+  .ad .mt.on{color:var(--ink)}
+  .ad .mt .mi{position:relative;display:flex;align-items:center;justify-content:center;width:44px;height:30px;border-radius:15px;transition:background .2s}
+  .ad .mt.on .mi{background:#ECE7DD}
+  .ad .mt.write .mi{background:var(--ink);color:#FBFAF7}
+  .ad .mt.write.on .mi{background:var(--ac)}
+  .ad .mt .ml{font-size:10.5px;font-weight:500;letter-spacing:.01em}
+  .ad .mt .mb{position:absolute;top:-3px;right:0;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--ink);color:#FBFAF7;font-size:10px;line-height:17px;text-align:center;font-family:'IBM Plex Mono',monospace}
+  .ad .mt .mb.red{background:var(--ac)}
+}
+@media (display-mode: standalone){
+  .ad{-webkit-user-select:none;user-select:none;overscroll-behavior-y:none}
+  .ad input,.ad textarea,.ad .nbody,.ad td{-webkit-user-select:text;user-select:text}
+}

@@ -2,6 +2,7 @@ import { requireAdmin } from '@/lib/admin-session';
 import { db } from '@/lib/db';
 import { logoutAction } from '../actions';
 import Nav from '@/components/admin/Nav';
+import MobileTabs from '@/components/admin/MobileTabs';
 import '@/components/admin/admin.css';
 
 export const dynamic = 'force-dynamic';
@@ -32,6 +33,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
         </aside>
         <main className="main"><div className="wrap">{children}</div></main>
       </div>
+      <MobileTabs noteBadge={notes ?? 0} failBadge={fails ?? 0} />
     </div>
   );
 }

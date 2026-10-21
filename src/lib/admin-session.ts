@@ -9,6 +9,7 @@ import type { ClientInfo } from './client-info';
 export const ADMIN_COOKIE = 'sepya_a';
 const ABS_HOURS = 8;
 const IDLE_MINUTES = 120;
+const REMEMBER_DAYS = 30; // "bu cihazda açık kalsın": uygulama her açılışta giriş istemesin
 export const ADMIN_RULES = { maxFails: 5, windowMin: 15, accountMaxFails: 10, accountWindowMin: 60 };
 const secure = process.env.NODE_ENV === 'production';
 
@@ -20,13 +21,15 @@ export async function getAdmin(): Promise<Admin | null> {
   if (!token || token.length > 100) return null;
   const { data } = await db()
     .from('admin_sessions')
-    .select('id, admin_id, expires_at, last_seen_at, ended_at, admin_users(email)')
+    .select('id, admin_id, created_at, expires_at, last_seen_at, ended_at, admin_users(email)')
     .eq('token_hash', sha256(token))
     .maybeSingle();
   if (!data || data.ended_at) return null;
   const now = Date.now();
   if (new Date(data.expires_at).getTime() < now) return null;
-  if (new Date(data.last_seen_at).getTime() < now - IDLE_MINUTES * 60000) return null;
+  const remembered = new Date(data.expires_at).getTime() - new Date(data.created_at).getTime() > 86400000;
+  const idleMs = remembered ? REMEMBER_DAYS * 86400000 : IDLE_MINUTES * 60000;
+  if (new Date(data.last_seen_at).getTime() < now - idleMs) return null;
   if (now - new Date(data.last_seen_at).getTime() > 60000) {
     await db().from('admin_sessions').update({ last_seen_at: new Date().toISOString() }).eq('id', data.id);
   }
@@ -66,9 +69,9 @@ async function logEvent(info: ClientInfo, email: string, success: boolean, reaso
   });
 }
 
-export async function startAdminSession(adminId: string, info: ClientInfo) {
+export async function startAdminSession(adminId: string, info: ClientInfo, remember = false) {
   const token = randomToken();
-  const expires = new Date(Date.now() + ABS_HOURS * 3600000);
+  const expires = new Date(Date.now() + (remember ? REMEMBER_DAYS * 86400000 : ABS_HOURS * 3600000));
   const { error } = await db().from('admin_sessions').insert({
     token_hash: sha256(token), admin_id: adminId, ip: info.ip, device: info.device, os: info.os, browser: info.browser,
     expires_at: expires.toISOString()
@@ -83,7 +86,7 @@ let dummyHash: Promise<string> | null = null;
 export type LoginResult = { ok: true } | { ok: false; error: string };
 
 /** Yönetici girişi: e-posta + parola. (İki adımlı doğrulama kullanıcının isteğiyle kapalı.) */
-export async function adminLogin(emailRaw: string, password: string, info: ClientInfo): Promise<LoginResult> {
+export async function adminLogin(emailRaw: string, password: string, info: ClientInfo, remember = false): Promise<LoginResult> {
   const email = emailRaw.trim().toLowerCase();
   const sb = db();
 
@@ -115,8 +118,8 @@ export async function adminLogin(emailRaw: string, password: string, info: Clien
     await logEvent(info, email, false, 'parola');
     return { ok: false, error: 'E-posta ya da parola hatalı.' };
   }
-  await logEvent(info, email, true, 'giriş');
-  await startAdminSession(user.id, info);
+  await logEvent(info, email, true, remember ? 'giriş · hatırla' : 'giriş');
+  await startAdminSession(user.id, info, remember);
   return { ok: true };
 }
 

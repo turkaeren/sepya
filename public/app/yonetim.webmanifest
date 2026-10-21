@@ -1,0 +1,22 @@
+{
+  "id": "/yonetim",
+  "name": "SEPYA Yönetim",
+  "short_name": "SEPYA",
+  "description": "SEPYA yönetim paneli",
+  "lang": "tr",
+  "start_url": "/yonetim",
+  "scope": "/yonetim",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6F4EF",
+  "theme_color": "#F6F4EF",
+  "icons": [
+    { "src": "/app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Yeni yazı", "url": "/yonetim/icerikler/yeni", "icons": [{ "src": "/app/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Notlar", "url": "/yonetim/notlar", "icons": [{ "src": "/app/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

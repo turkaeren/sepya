@@ -73,6 +73,12 @@ npm run dev                  # http://localhost:3000
 
 ## Son güncellemeler
 
+- **Yönetim uygulaması (PWA):** `/yonetim` ana ekrana kurulabiliyor.
+  - Manifest `public/app/yonetim.webmanifest`, simgeler `public/app/*.png`.
+  - Service worker `public/yonetim-sw.js` (kapsamı `/yonetim`): özel veriyi önbelleğe almaz, yalnızca çevrimdışı sayfasını (`/app/offline.html`) tutar.
+  - Mobilde alt sekme çubuğu var (`MobileTabs.tsx`): Genel, İçerikler, Yaz, Notlar, Daha (`/yonetim/daha`).
+  - “Uygulamayı kur” kartı (`AppShell.tsx`) uygulamanın içindeyken gizlenir.
+  - Girişte “Bu cihazda açık kalsın (30 gün)” seçeneği var; uygulamadan açılınca varsayılan olarak işaretli. Hatırlanan oturumda hareketsizlik sınırı da 30 gün.
 - **İstatistik sıfırlama:** Analitik sayfasının en altında. Ziyaret/okuma kayıtları (biten oturumlar ve sayfa görüntülemeleri) ve giriş denemeleri (pin_attempts, ip_blocks) ayrı ayrı seçilebiliyor. Onay için “sıfırla” yazılması gerekiyor.
 - **WordPress içe aktarma kaldırıldı** (sayfa, `wp-import.ts`, `importAction`).
 - **Kaynak düzeltmesi:**
