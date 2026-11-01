@@ -73,6 +73,7 @@ npm run dev                  # http://localhost:3000
 
 ## Son güncellemeler
 
+- **Supabase'i uyanık tutma:** Vercel Cron her gün 06:17 UTC'de `/api/keepalive`'ı çağırır. Bu, `settings` tablosuna tek bir sayım sorgusu atar; ücretsiz planın 7 günlük hareketsizlikte projeyi durdurmasını önler. İstek `CRON_SECRET` (Vercel env, yalnızca Production) ile doğrulanır.
 - **Yönetim uygulaması (PWA):** `/yonetim` ana ekrana kurulabiliyor.
   - Manifest `public/app/yonetim.webmanifest`, simgeler `public/app/*.png`.
   - Service worker `public/yonetim-sw.js` (kapsamı `/yonetim`): özel veriyi önbelleğe almaz, yalnızca çevrimdışı sayfasını (`/app/offline.html`) tutar.
