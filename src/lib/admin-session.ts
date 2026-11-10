@@ -43,9 +43,11 @@ export async function requireAdmin(): Promise<Admin> {
   return a;
 }
 
+/** Veritabanına ulaşılamazsa hata fırlatır: "yönetici yok" sanıp kurulum sayfasını açmasın. */
 export async function hasAnyAdmin() {
-  const { count } = await db().from('admin_users').select('id', { count: 'exact', head: true });
-  return (count ?? 0) > 0;
+  const { count, error } = await db().from('admin_users').select('id', { count: 'exact', head: true });
+  if (error || count === null) throw new Error('Veritabanına ulaşılamıyor.');
+  return count > 0;
 }
 
 export function newTotpSecret() {
